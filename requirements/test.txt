@@ -1,0 +1,12 @@
+# Requirements for testing of clinvar-tsv
+
+# Base Requirements
+-r base.txt
+
+# Wonderful py.test library, style checker etc.
+pytest==3.0.6
+flake8>=3.5.0
+pytest-flake8==0.8.1
+coverage==4.3.4
+pytest-cov==2.4.0
+codacy-coverage==1.3.6

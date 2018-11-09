@@ -1,0 +1,7 @@
+# Base requirements for clinvar-tsv
+
+# Black source code formatter and style checker.
+black ==18.9b0
+
+# Versioneer is useful for version management.
+versioneer ==0.18
