@@ -1,0 +1,92 @@
+import os.path
+
+#: Path to b37/b38 FASTA file
+REF = {
+    'b37': config.get('b37_path', '/dev/null'),
+    'b38': config.get('b38_path', '/dev/null'),
+}
+
+
+rule default:
+    input:
+        expand(
+            "output/clinvar_allele_trait_pairs.{mult}.{build}.tsv{ext}",
+            mult=("multi", "single"),
+            build=("b37", "b38"),
+            ext=(".gz", ".gz.tbi", ".gz.md5", ".gz.tbi.md5"),
+        )
+
+
+rule download_xml:
+    output: "downloads/ClinVarFullRelease_00-latest.xml.gz"
+    shell:
+        r"""
+        wget -c -N -O {output} ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_00-latest.xml.gz \
+        2> {output}.log
+        """
+
+
+rule download_txt:
+    output: "downloads/variant_summary.txt.gz"
+    shell:
+        r"""
+        wget -c -N -O {output} ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz \
+        2> {output}.log
+        """
+
+
+rule parse_clinvar:
+    input:
+        release_xml="downloads/ClinVarFullRelease_00-latest.xml.gz",
+        summary="downloads/variant_summary.txt.gz",
+    output:
+        single=temp("parsed/clinvar_table_raw.single.{genome_build}.tsv"),
+        multi=temp("parsed/clinvar_table_raw.multi.{genome_build}.tsv"),
+    shell:
+        r"""
+        clinvar_tsv parse_xml \
+            --clinvar-xml {input.release_xml} \
+            --genome-build {wildcards.genome_build} \
+            --output-single {output.single} \
+            --output-multi {output.multi} 
+        """
+
+
+rule normalize_clinvar:
+    input:
+        tsv="parsed/clinvar_table_raw.{mult}.{genome_build}.tsv",
+        reference=lambda wildcards: REF[wildcards.genome_build],
+    output: temp("normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv"),
+    shell:
+        r"""
+        clinvar_tsv normalize_tsv \
+            --input-tsv {input.tsv} \
+            --reference {input.reference} \
+            --output-tsv /dev/stdout \
+        | grep -v '^$' \
+        | bgzip -c \
+        > {output}
+        """
+
+
+rule sort_tabix_clinvar:
+    input: "normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv",
+    output:
+        tsv="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz",
+        tbi="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi",
+        tsv_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.md5",
+        tbi_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi.md5",
+    shell:
+        r"""
+        cat \
+            <(zcat {input} | head -1) \
+            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | sort -k1,1n -k2,2n -k3,3 -k4,4)
+            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | sort -k1,1  -k2,2n -k3,3 -k4,4)
+        | bgzip -c \
+        > {output.tsv}
+        tabix -S 1 -s 1 -b 2 -e 2 -f {output.tsv}
+        
+        cd $(dirname {output.tsv})
+        md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
+        md5sum $(basename {output.tbi}) >$(basename {output.tbi}).md5
+        """

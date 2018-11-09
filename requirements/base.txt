@@ -1,7 +1,10 @@
 # Base requirements for clinvar-tsv
 
-# Black source code formatter and style checker.
+# Black source code formatter and style checker
 black ==18.9b0
 
-# Versioneer is useful for version management.
+# Versioneer is useful for version management
 versioneer ==0.18
+
+# Snakemake for running the workflow
+snakemake ==5.3.0
