@@ -63,6 +63,7 @@ HEADER = [
     "origin",
     "xrefs",
     "dates_ordered",
+    "multi",
 ]
 
 
@@ -79,7 +80,7 @@ def remove_newlines_and_tabs(s):
 class ClinvarParser:
     """Helper class for parsing Clinvar XML"""
 
-    def __init__(self, input_file, output_single, output_multi, genome_build):
+    def __init__(self, input_file, output_single, output_multi, genome_build, max_rows=None):
         #: ``file``-like object to load the XML from
         self.input = input_file
         #: ``file``-like object to write single variants to
@@ -96,8 +97,16 @@ class ClinvarParser:
         self.single_counter = 0
         #: Counters for multi
         self.multi_counter = 0
+        #: Largest number of rows to write out (for testing only)
+        self.max_rows = max_rows
 
     def _write_row(self, output, row):
+        if self.genome_build == "GRCh38":
+            # Adjust contig name to be the one in hs38.
+            if not row["chrom"].startswith("chr"):
+                row["chrom"] = "chr" + row["chrom"]
+            if row["chrom"] == "chrMT":
+                row["chrom"] = "chrM"
         output.write("\t".join([str(row[field]) for field in HEADER]))
         output.write("\n")
 
@@ -108,12 +117,16 @@ class ClinvarParser:
     def run(self):
         logging.info("Writing headers...")
         self._write_header(self.single)
-        self._write_header(self.multi)
+        if self.multi.name != self.single.name and self.multi is not self.single:
+            self._write_header(self.multi)
         logging.info("Parsing elements...")
         for event, elem in ET.iterparse(self.input):
             if elem.tag == "ClinVarSet" and event == "end":
                 self._process_clinvar_set(elem)
-            if self.written_rows > 100:
+            if self.max_rows and self.written_rows >= self.max_rows:
+                logging.info(
+                    "Breaking out after writing %d rows (as configured)", self.written_rows
+                )
                 break
         logging.info("Done parsing elements")
 
@@ -124,7 +137,7 @@ class ClinvarParser:
         """
         # Find the one ClinVarAccession tag corresponding to the reference accession RCV*
         rcv = clinvar_set.find("./ReferenceClinVarAssertion/ClinVarAccession")
-        if rcv.attrib.get("Type") != "RCV":
+        if rcv.attrib.get("Type") != "RCV":  # pragma: no cover
             raise XmlParseException(
                 "Assumed to find RCV record but found type: %s" % rcv.attrib.get("Type")
             )
@@ -133,16 +146,33 @@ class ClinvarParser:
 
         # There should only be one ReferenceClinVarAssertion
         ref_clinvar_assertions = clinvar_set.findall(".//ReferenceClinVarAssertion")
-        if len(ref_clinvar_assertions) > 1:
+        if len(ref_clinvar_assertions) > 1:  # pragma: no cover
             raise XmlParseException("Assumed to find only one ReferenceClinVarAssertion")
 
         # Process all MeasureSet elements.  There can be multiple ones in the case of het. comp. variants.
         # A good example for this is RCV000201320.
         measure_sets = ref_clinvar_assertions[0].findall(".//MeasureSet")
+        rows = []
         for measure_set in measure_sets:
-            self._process_measure_set({**row}, clinvar_set, measure_set, len(measure_sets) > 1)
+            rows += list(self._process_measure_set({**row}, clinvar_set, measure_set))
+        if rows:
+            if len(rows) > 1:
+                self.multi_counter += 1
+                output_file = self.multi
+            else:
+                self.single_counter += 1
+                output_file = self.single
+            for row in rows:
+                self._write_row(output_file, {**row, "multi": int(len(rows) > 1)})
+            self.written_rows += 1
+            logging.info(
+                "%d entries completed %s, %d total",
+                self.written_rows,
+                ", ".join("%s skipped due to %s" % (v, k) for k, v in self.skipped_counter.items()),
+                self.written_rows + sum(self.skipped_counter.values()),
+            )
 
-    def _process_measure_set(self, row, clinvar_set, measure_set, has_multiple):
+    def _process_measure_set(self, row, clinvar_set, measure_set):
         """Process the given measure set."""
         # Extend row with variation ID and type.
         row = {
@@ -160,11 +190,20 @@ class ClinvarParser:
         measures = measure_set.findall(".//Measure")
         for i, measure in enumerate(measures):
             try:
-                self._process_measure(
-                    row, clinvar_set, measure_set, measure, has_multiple or len(measures) > 0
-                )
-            except NoSequenceLocation:
+                yield from self._process_measure(row, clinvar_set, measure_set, measure)
+            except NoSequenceLocation:  # pragma: no cover
                 pass  # swallow
+
+    def _process_measure(self, row, clinvar_set, measure_set, measure):
+        symbol = row["symbol"] or self._get_symbol_from_measure(measure)
+        row = {
+            **row,
+            "symbol": symbol,
+            "allele_id": measure.attrib.get("ID"),
+            **self._get_genomic_location(measure, symbol),
+            **self._get_molecular_consequence(measure),
+        }
+        yield row
 
     def _yield_all_pmids_in_clinvar_set(self, clinvar_set):
         # Find all the Citation nodes, and get the PMIDs out of them.
@@ -230,12 +269,12 @@ class ClinvarParser:
             review_status = sig_elem.find("./ReviewStatus")
             if review_status is not None:
                 review_status_ordered.append(review_status.text)
-            else:
+            else:  # pragma: no cover
                 review_status_ordered.append("")
             significance = sig_elem.find("./Description")
             if significance is not None:
                 clinical_significance_ordered.append(significance.text)
-            else:
+            else:  # pragma: no cover
                 clinical_significance_ordered.append("")
         assert len(review_status_ordered) == len(clinical_significance_ordered)
         dates_ordered = [
@@ -318,31 +357,6 @@ class ClinvarParser:
                 result = match.group(1)
         return result
 
-    def _process_measure(self, row, clinvar_set, measure_set, measure, has_multiple):
-        symbol = row["symbol"] or self._get_symbol_from_measure(measure)
-        row = {
-            **row,
-            "symbol": symbol,
-            "allele_id": measure.attrib.get("ID"),
-            **self._get_genomic_location(measure, symbol),
-            **self._get_molecular_consequence(measure),
-        }
-
-        self.written_rows += 1
-        if has_multiple:
-            self._write_row(self.multi, row)
-            self.multi_counter += 1
-        else:
-            self._write_row(self.single, row)
-            self.single_counter += 1
-        if self.written_rows % 1000 == 0:
-            logging.info(
-                "%d entries completed %s, %d total",
-                self.written_rows,
-                ", ".join("%s skipped due to %s" % (v, k) for k, v in self.skipped_counter.items()),
-                self.written_rows + sum(self.skipped_counter.values()),
-            )
-
     def _get_symbol_from_measure(self, measure):
         for symbol in measure.findall(".//Symbol") or []:
             if symbol.find("ElementValue").attrib.get("Type") == "Preferred":
@@ -361,7 +375,7 @@ class ClinvarParser:
                     genomic_location = sequence_location
                     # break after finding the first non-empty locating matching our genome build
                     break
-        else:
+        else:  # pragma: no cover
             self.skipped_counter["missing SequenceLocation"] += 1
             logging.debug("Skipping Measure because it has no location")
             raise NoSequenceLocation("No sequence location in Measure")

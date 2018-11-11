@@ -48,7 +48,10 @@ rule parse_clinvar:
             --clinvar-xml {input.release_xml} \
             --genome-build {wildcards.genome_build} \
             --output-single {output.single} \
-            --output-multi {output.multi} 
+            --output-multi {output.multi} \
+            $(if [[ {config[debug]} == "True" ]]; then
+                echo "--max-rows 100"
+            fi) 
         """
 
 
@@ -56,7 +59,7 @@ rule normalize_clinvar:
     input:
         tsv="parsed/clinvar_table_raw.{mult}.{genome_build}.tsv",
         reference=lambda wildcards: REF[wildcards.genome_build],
-    output: temp("normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv"),
+    output: temp("normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv.gz"),
     shell:
         r"""
         clinvar_tsv normalize_tsv \
@@ -70,7 +73,7 @@ rule normalize_clinvar:
 
 
 rule sort_tabix_clinvar:
-    input: "normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv",
+    input: "normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv.gz",
     output:
         tsv="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz",
         tbi="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi",
@@ -78,10 +81,30 @@ rule sort_tabix_clinvar:
         tbi_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi.md5",
     shell:
         r"""
+        if [[ "{wildcards.genome_build}" == "b37" ]]; then
+          add_chr()
+          {{
+            cat
+          }}
+          rm_chr()
+          {{
+            cat
+          }}
+        else
+          add_chr()
+          {{
+            sed -e 's/^/chr/'
+          }}
+          rm_chr()
+          {{
+            cut -b 4-
+          }}
+        fi
+        
         cat \
             <(zcat {input} | head -1) \
-            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | sort -k1,1n -k2,2n -k3,3 -k4,4)
-            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | sort -k1,1  -k2,2n -k3,3 -k4,4)
+            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | rm_chr | sort -k1,1n -k2,2n -k3,3 -k4,4 | add_chr) \
+            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | rm_chr | sort -k1,1  -k2,2n -k3,3 -k4,4 | add_chr) \
         | bgzip -c \
         > {output.tsv}
         tabix -S 1 -s 1 -b 2 -e 2 -f {output.tsv}

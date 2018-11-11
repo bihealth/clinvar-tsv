@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- ClinVar record with a simple SNV -->
+<ReleaseSet Dated="2018-10-29" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="full" xsi:noNamespaceSchemaLocation="http://ftp.ncbi.nlm.nih.gov/pub/clinvar/xsd_public/clinvar_public_1.54.xsd">
+
+<ClinVarSet ID="33675656">
+  <RecordStatus>current</RecordStatus>
+  <Title>NM_014305.3(TGDS):c.892A&gt;G (p.Asn298Asp) AND Catel Manzke syndrome</Title>
+  <ReferenceClinVarAssertion DateCreated="2015-01-15" DateLastUpdated="2018-08-31" ID="354334">
+    <ClinVarAccession Acc="RCV000149822" Version="4" Type="RCV" DateUpdated="2018-08-31"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2014-12-04">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData ID="32175167">
+        <Attribute Type="Description">For discussion of the asn298-to-asp (N298D) mutation in the TGDS gene that was found in compound heterozygous state in a patient with Catel-Manzke syndrome (616145) by Ehmke et al. (2014), see 616146.0005.</Attribute>
+        <Citation Type="general">
+          <ID Source="PubMed">25480037</ID>
+        </Citation>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="162460">
+      <Measure Type="single nucleotide variant" ID="172135">
+        <Name>
+          <ElementValue Type="Preferred">NM_014305.3(TGDS):c.892A&gt;G (p.Asn298Asp)</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Change="c.892A&gt;G" Accession="NM_014305" Version="3" Type="HGVS, coding, RefSeq">NM_014305.3:c.892A&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="g.24872A&gt;G" Accession="NG_041837" Version="1" Type="HGVS, genomic, RefSeqGene">NG_041837.1:g.24872A&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="g.94576404T&gt;C" Accession="NC_000013" Version="11" Type="HGVS, genomic, top level" integerValue="38">NC_000013.11:g.94576404T&gt;C</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="g.95228658T&gt;C" Accession="NC_000013" Version="10" Type="HGVS, genomic, top level, previous" integerValue="37">NC_000013.10:g.95228658T&gt;C</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="n.1027A&gt;G" Accession="NR_130731" Version="1" Type="HGVS, non-coding">NR_130731.1:n.1027A&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="p.Asn298Asp" Accession="O95455" Type="HGVS, protein">O95455:p.Asn298Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Change="p.Asn298Asp" Accession="NP_055120" Version="1" Type="HGVS, protein, RefSeq">NP_055120.1:p.Asn298Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_014305.3:c.892A&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">non-coding transcript variant</Attribute>
+          <XRef ID="SO:0001619" DB="Sequence Ontology"/>
+          <XRef ID="NR_130731.1:n.1027A&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange1LetterCode">N298D</Attribute>
+          <XRef Type="Allelic variant" ID="616146.0006" DB="OMIM"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange3LetterCode">ASN298ASP</Attribute>
+          <XRef Type="Allelic variant" ID="616146.0006" DB="OMIM"/>
+        </AttributeSet>
+        <CytogeneticLocation>13q32.1</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.33" AssemblyStatus="current" Chr="13" Accession="NC_000013.11" start="94576404" stop="94576404" display_start="94576404" display_stop="94576404" variantLength="1" referenceAllele="T" alternateAllele="C" positionVCF="94576404" referenceAlleleVCF="T" alternateAlleleVCF="C"/>
+        <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="13" Accession="NC_000013.10" start="95228658" stop="95228658" display_start="95228658" display_stop="95228658" variantLength="1" referenceAllele="T" alternateAllele="C" positionVCF="95228658" referenceAlleleVCF="T" alternateAlleleVCF="C"/>
+        <MeasureRelationship Type="within single gene">
+          <Name>
+            <ElementValue Type="Preferred">TDP-glucose 4,6-dehydratase</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">TGDS</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.33" AssemblyStatus="current" Chr="13" Accession="NC_000013.11" start="94574054" stop="94596275" display_start="94574054" display_stop="94596275" Strand="-"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="13" Accession="NC_000013.10" start="95226307" stop="95248510" display_start="95226307" display_stop="95248510" variantLength="22204" Strand="-"/>
+          <XRef ID="23483" DB="Gene"/>
+          <XRef Type="MIM" ID="616146" DB="OMIM"/>
+          <XRef ID="HGNC:20324" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef ID="O95455#VAR_072686" DB="UniProtKB"/>
+        <XRef Type="Allelic variant" ID="616146.0006" DB="OMIM"/>
+        <XRef Type="rs" ID="724160005" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">NM_014305.3(TGDS):c.892A&gt;G (p.Asn298Asp)</ElementValue>
+      </Name>
+      <XRef ID="CA175050" DB="ClinGen"/>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="20503">
+      <Trait ID="700" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Catel Manzke syndrome</ElementValue>
+          <XRef ID="Catel+Manzke+Syndrome/1170" DB="Genetic Alliance"/>
+          <XRef ID="28" DB="Office of Rare Diseases"/>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">MICROGNATHIA DIGITAL SYNDROME</ElementValue>
+          <XRef Type="MIM" ID="616145 " DB="OMIM"/>
+        </Name>
+        <Symbol>
+          <ElementValue Type="Preferred">CATMANS</ElementValue>
+          <XRef Type="MIM" ID="616145" DB="OMIM"/>
+        </Symbol>
+        <XRef ID="C1844887" DB="MedGen"/>
+        <XRef ID="1388" DB="Orphanet"/>
+        <XRef Type="MIM" ID="616145" DB="OMIM"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="354324">
+    <ClinVarSubmissionID localKey="616146.0006_CATEL-MANZKE SYNDROME" submitter="OMIM" submitterDate="2015-01-14" title="TGDS, ASN298ASP _CATEL-MANZKE SYNDROME"/>
+    <ClinVarAccession Acc="SCV000196649" OrgType="primary" OrganizationCategory="resource" Version="2" Type="SCV" OrgID="3" DateUpdated="2017-04-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2014-12-04">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="OMIM" ID="616146.0006" Type="Allelic variant"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">For discussion of the asn298-to-asp (N298D) mutation in the TGDS gene that was found in compound heterozygous state in a patient with Catel-Manzke syndrome (616145) by Ehmke et al. (2014), see 616146.0005.</Attribute>
+        <Citation>
+          <ID Source="PubMed">25480037</ID>
+        </Citation>
+        <XRef DB="OMIM" ID="616145" Type="MIM"/>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <Name>
+          <ElementValue Type="Preferred">TGDS, ASN298ASP</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="NonHGVS">ASN298ASP</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">TGDS</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+        <XRef DB="OMIM" ID="616146.0006" Type="Allelic variant"/>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">CATEL-MANZKE SYNDROME</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+</ReleaseSet>

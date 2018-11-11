@@ -9,7 +9,7 @@ import sys
 
 import snakemake
 
-from . import parse_clinvar_xml
+from . import parse_clinvar_xml, normalize
 
 
 def run_inspect(args):
@@ -27,9 +27,10 @@ def run_main(args):
     kwargs = {
         "snakefile": os.path.join(os.path.dirname(__file__), "Snakefile"),
         "workdir": args.work_dir,
-        "config": {"b37_path": args.b37_path, "b38_path": args.b38_path},
+        "config": {"b37_path": args.b37_path, "b38_path": args.b38_path, "debug": args.debug},
         "printshellcmds": True,
         "verbose": True,
+        "force_incomplete": True,
     }
     return snakemake.snakemake(**kwargs)
 
@@ -44,19 +45,22 @@ def open_maybe_gzip(path, mode):
 def run_parse_xml(args):
     """Parse XML file."""
     build = {"b37": "GRCh37", "b38": "GRCh38"}
-    with open_maybe_gzip(args.output_single, "wt") as single_f:
-        with open_maybe_gzip(args.output_multi, "wt") as multi_f:
+    with open(args.output_single, "wt") as single_f:
+        with open(args.output_multi, "wt") as multi_f:
             parser = parse_clinvar_xml.ClinvarParser(
                 open_maybe_gzip(args.clinvar_xml, "rb"),
                 single_f,
                 multi_f,
                 genome_build=build[args.genome_build],
+                max_rows=args.max_rows,
             )
             parser.run()
 
 
 def run_normalize_tsv(args):
-    touch(args.output_tsv)
+    with open(args.input_tsv, "rt") as input_tsv:
+        with open(args.output_tsv, "wt") as output_tsv:
+            normalize.normalize_tab_delimited_file(input_tsv, output_tsv, args.reference)
 
 
 def run(args):
@@ -93,6 +97,9 @@ def main(argv=None):
         "--b38-path", required=True, help="Path to GRCh38 FAI-indexed FASTA file."
     )
     parser_main.add_argument("--work-dir", default=os.getcwd(), help="Path to working directory")
+    parser_main.add_argument(
+        "--debug", default=False, action="store_true", help="Enables debugging helps"
+    )
     parser_main.set_defaults(func=run_main)
 
     # -----------------------------------------------------------------------
@@ -112,6 +119,12 @@ def main(argv=None):
     )
     parser_parse_xml.add_argument(
         "--output-multi", required=True, help="Output path to multi TSV file."
+    )
+    parser_parse_xml.add_argument(
+        "--max-rows",
+        required=False,
+        type=int,
+        help="Maximal number of rows to write out; for debugging.",
     )
     parser_parse_xml.set_defaults(func=run_parse_xml)
 

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Small deletion from Clinvar -->
+<ReleaseSet Dated="2018-10-29" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="full" xsi:noNamespaceSchemaLocation="http://ftp.ncbi.nlm.nih.gov/pub/clinvar/xsd_public/clinvar_public_1.54.xsd">
+
+<ClinVarSet ID="18635964">
+  <RecordStatus>current</RecordStatus>
+  <Title>TECTA, 1-BP DEL, 6037G AND Deafness, neurosensory autosomal recessive 21</Title>
+  <ReferenceClinVarAssertion DateCreated="2012-08-13" DateLastUpdated="2017-04-07" ID="64937">
+    <ClinVarAccession Acc="RCV000007434" Version="2" Type="RCV" DateUpdated="2017-04-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2003-05-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData ID="17812915">
+        <Attribute Type="Description">In affected members of a consanguineous Pakistani family with hearing loss (603629), Naz et al. (2003) identified homozygosity for a 1-bp deletion, 6037delG, in exon 20 of the TECTA gene, resulting in a frameshift. Testing demonstrated a flat to shallow U-shaped audiogram. The hearing loss was prelingual, bilateral, and moderate to severe. By history, the hearing impairment was nonprogressive. The heterozygous carriers of the frameshift mutation had normal hearing thresholds.</Attribute>
+        <Citation Type="general">
+          <ID Source="PubMed">12746400</ID>
+        </Citation>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="7019">
+      <Measure Type="Deletion" ID="22058">
+        <Name>
+          <ElementValue Type="Preferred">TECTA, 1-BP DEL, 6037G</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="nucleotide change">1-BP DEL, 6037G</Attribute>
+          <XRef Type="Allelic variant" ID="602574.0007" DB="OMIM"/>
+        </AttributeSet>
+        <CytogeneticLocation>11q22-q24</CytogeneticLocation>
+        <MeasureRelationship Type="asserted, but not computed">
+          <Name>
+            <ElementValue Type="Preferred">tectorin alpha</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">TECTA</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.33" AssemblyStatus="current" Chr="11" Accession="NC_000011.10" start="121102666" stop="121190806" display_start="121102666" display_stop="121190806" Strand="+"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="11" Accession="NC_000011.9" start="120973374" stop="121061514" display_start="120973374" display_stop="121061514" variantLength="88141" Strand="+"/>
+          <XRef ID="7007" DB="Gene"/>
+          <XRef Type="MIM" ID="602574" DB="OMIM"/>
+          <XRef ID="HGNC:11720" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef Type="Allelic variant" ID="602574.0007" DB="OMIM"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">TECTA, 1-BP DEL, 6037G</ElementValue>
+      </Name>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="1937">
+      <Trait ID="10291" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Deafness, neurosensory autosomal recessive 21</ElementValue>
+        </Name>
+        <XRef ID="C4016799" DB="MedGen"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="27634">
+    <ClinVarSubmissionID localKey="602574.0007_DEAFNESS, NEUROSENSORY AUTOSOMAL RECESSIVE 21" submitter="OMIM" submitterDate="2011-07-27" title="TECTA, 1-BP DEL, 6037G_DEAFNESS, NEUROSENSORY AUTOSOMAL RECESSIVE 21"/>
+    <ClinVarAccession Acc="SCV000027634" OrgType="primary" OrganizationCategory="resource" Version="1" Type="SCV" OrgID="3" DateUpdated="2017-04-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2003-05-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="OMIM" ID="602574.0007" Type="Allelic variant"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">In affected members of a consanguineous Pakistani family with hearing loss (603629), Naz et al. (2003) identified homozygosity for a 1-bp deletion, 6037delG, in exon 20 of the TECTA gene, resulting in a frameshift. Testing demonstrated a flat to shallow U-shaped audiogram. The hearing loss was prelingual, bilateral, and moderate to severe. By history, the hearing impairment was nonprogressive. The heterozygous carriers of the frameshift mutation had normal hearing thresholds.</Attribute>
+        <Citation>
+          <ID Source="PubMed">12746400</ID>
+        </Citation>
+        <XRef DB="OMIM" ID="603629" Type="MIM"/>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <Name>
+          <ElementValue Type="Preferred">TECTA, 1-BP DEL, 6037G</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="NonHGVS">1-BP DEL, 6037G</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">TECTA</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+        <XRef DB="OMIM" ID="602574.0007" Type="Allelic variant"/>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">DEAFNESS, NEUROSENSORY AUTOSOMAL RECESSIVE 21</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+</ReleaseSet>
