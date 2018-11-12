@@ -123,6 +123,7 @@ class ClinvarParser:
         for event, elem in ET.iterparse(self.input):
             if elem.tag == "ClinVarSet" and event == "end":
                 self._process_clinvar_set(elem)
+                elem.clear()
             if self.max_rows and self.written_rows >= self.max_rows:
                 logging.info(
                     "Breaking out after writing %d rows (as configured)", self.written_rows
