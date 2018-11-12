@@ -29,41 +29,40 @@ Usage: normalize.py -R $b37ref < bad_file.txt > good_file.txt
 """
 
 import sys
+import functools
 import pysam
 import argparse
 
-"""
-An Error class for rare cases where REF == ALT (seen in ClinVar XML)
-"""
-
 
 class RefEqualsAltError(Exception):
+    """
+    An Error class for rare cases where REF == ALT (seen in ClinVar XML)
+    """
+
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return repr(self.value)
-
-
-"""
-An Error class for REF or ALT values that are not valid nucleotide sequences
-"""
 
 
 class InvalidNucleotideSequenceError(Exception):
+    """
+    An Error class for REF or ALT values that are not valid nucleotide sequences
+    """
+
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return repr(self.value)
-
-
-"""
-An Error class for variants where the REF does not match the reference genome
-"""
 
 
 class WrongRefError(Exception):
+    """
+    An Error class for variants where the REF does not match the reference genome
+    """
+
     def __init__(self, value):
         self.value = value
 
@@ -71,13 +70,11 @@ class WrongRefError(Exception):
         return repr(self.value)
 
 
-"""
-Accepts a pysam FastaFile object pointing to the reference genome, and
-chrom, pos, ref, alt genomic coordinates, and normalizes them.
-"""
-
-
 def normalize(pysam_fasta, chrom, pos, ref, alt):
+    """
+    Accepts a pysam FastaFile object pointing to the reference genome, and
+    chrom, pos, ref, alt genomic coordinates, and normalizes them.
+    """
     pos = int(pos)  # make sure position is an integer
     ref = ref.upper()
     alt = alt.upper()
@@ -135,15 +132,21 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
     return chrom, pos, ref, alt
 
 
-"""
-This function takes a tab-delimited file with a header line containing columns
-named chrom, pos, ref, and alt, plus any other columns. It normalizes the
-chrom, pos, ref, and alt, and writes all columns out to another file.
-"""
+def has_chr(s):
+    """Returns whether the ``str`` starts with ``"chr"``."""
+    return s.startswith("chr")
 
 
 def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True):
+    """
+    This function takes a tab-delimited file with a header line containing columns
+    named chrom, pos, ref, and alt, plus any other columns. It normalizes the
+    chrom, pos, ref, and alt, and writes all columns out to another file.
+    """
     pysam_fasta = pysam.FastaFile(reference_fasta)  # create a pysam object of the reference genome
+    ref_chr_prefix = any(map(has_chr, pysam_fasta.references))
+    if ref_chr_prefix and not all(map(has_chr, pysam_fasta.references)):
+        sys.err.write("Warning: inconsistent chr prefix in FASTA file")
     header = infile.readline()  # get header of input file
     columns = header.strip("\n").split("\t")  # parse col names
     outfile.write("\t".join(columns) + "\n")  # write header line plus the CpG col to be generated
@@ -158,10 +161,24 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             if column not in data.keys():
                 data[column] = ""
         pos = int(data["pos"])
+        # Normalize "chr" prefix towards reference and fix M/MT
+        if ref_chr_prefix == has_chr(data["chrom"]):
+            chrom = data["chrom"]
+            if chrom.endswith("MT"):
+                chrom = "chrM"
+        elif ref_chr_prefix:
+            chrom = "chr%s" % data["chrom"]
+            if chrom.endswith("MT"):
+                chrom = "chrM"
+        else:
+            chrom = data["chrom"][3:]
+        # Perform normalization
         try:
-            data["chrom"], pos, data["ref"], data["alt"] = normalize(
-                pysam_fasta, data["chrom"], pos, data["ref"], data["alt"]
+            _, pos, data["ref"], data["alt"] = normalize(
+                pysam_fasta, chrom, pos, data["ref"], data["alt"]
             )
+            if data["chrom"].startswith("chr"):
+                data["chrom"] = data["chrom"][3:]
         except RefEqualsAltError as e:
             sys.stderr.write("\n" + str(e) + "\n")
             ref_equals_alt += 1

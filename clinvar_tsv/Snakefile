@@ -81,30 +81,10 @@ rule sort_tabix_clinvar:
         tbi_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi.md5",
     shell:
         r"""
-        if [[ "{wildcards.genome_build}" == "b37" ]]; then
-          add_chr()
-          {{
-            cat
-          }}
-          rm_chr()
-          {{
-            cat
-          }}
-        else
-          add_chr()
-          {{
-            sed -e 's/^/chr/'
-          }}
-          rm_chr()
-          {{
-            cut -b 4-
-          }}
-        fi
-        
         cat \
             <(zcat {input} | head -1) \
-            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | rm_chr | sort -k1,1n -k2,2n -k3,3 -k4,4 | add_chr) \
-            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | rm_chr | sort -k1,1  -k2,2n -k3,3 -k4,4 | add_chr) \
+            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | sort -k1,1n -k2,2n -k3,3 -k4,4) \
+            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | sort -k1,1  -k2,2n -k3,3 -k4,4) \
         | bgzip -c \
         > {output.tsv}
         tabix -S 1 -s 1 -b 2 -e 2 -f {output.tsv}
