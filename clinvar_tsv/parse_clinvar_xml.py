@@ -252,9 +252,11 @@ class ClinvarParser:
             ".//ReferenceClinVarAssertion/ClinicalSignificance"
         )
         if clinical_significance.find(".//ReviewStatus") is not None:
-            result["review_status"] = clinical_significance.find(".//ReviewStatus").text
+            result["review_status"] = clinical_significance.find(".//ReviewStatus").text.lower()
         if clinical_significance.find(".//Description") is not None:
-            result["clinical_significance"] = clinical_significance.find(".//Description").text
+            result["clinical_significance"] = clinical_significance.find(
+                ".//Description"
+            ).text.lower()
         if clinical_significance.attrib.get("DateLastEvaluated") is not None:
             result["last_evaluated"] = clinical_significance.attrib.get(
                 "DateLastEvaluated", "0000-00-00"
@@ -265,23 +267,25 @@ class ClinvarParser:
         """Get ordered version of review status and significance as well as the pathogenicity counts."""
         review_status_ordered = []
         clinical_significance_ordered = []
+        dates_ordered = []
         for sig_elem in clinvar_set.findall(".//ClinVarAssertion/ClinicalSignificance"):
-            review_status = sig_elem.find("./ReviewStatus")
+            review_status = sig_elem.find(".//ReviewStatus")
             if review_status is not None:
-                review_status_ordered.append(review_status.text)
+                review_status_ordered.append(review_status.text.lower())
             else:  # pragma: no cover
                 review_status_ordered.append("")
-            significance = sig_elem.find("./Description")
+            significance = sig_elem.find(".//Description")
             if significance is not None:
-                clinical_significance_ordered.append(significance.text)
+                clinical_significance_ordered.append(significance.text.lower())
             else:  # pragma: no cover
                 clinical_significance_ordered.append("")
+            date = sig_elem.find(".//DateLastEvaluated")
+            if date is not None:
+                dates_ordered.append(date.text)
+            else:  # pragma: no cover
+                dates_ordered.append("")
         assert len(review_status_ordered) == len(clinical_significance_ordered)
-        dates_ordered = [
-            x.attrib.get("DateLastEvaluated", "0000-00-00")
-            for x in clinvar_set.findall(".//ClinVarAssertion/ClinicalSignificance")
-            if x is not None
-        ]
+        assert len(review_status_ordered) == len(dates_ordered)
         keys = (
             "pathogenic",
             "likely_pathogenic",
@@ -289,12 +293,13 @@ class ClinvarParser:
             "benign",
             "likely_benign",
         )
-        return {
+        result = {
             "review_status_ordered": ";".join(review_status_ordered),
             "clinical_significance_ordered": ";".join(clinical_significance_ordered),
             **{key: clinical_significance_ordered.count(key) for key in keys},
             "dates_ordered": ";".join(dates_ordered),
         }
+        return result
 
     @staticmethod
     def _disease_attribute_to_column(attribute_type):
