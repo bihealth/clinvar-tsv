@@ -83,11 +83,11 @@ rule sort_tabix_clinvar:
         r"""
         cat \
             <(zcat {input} | head -1) \
-            <(zcat {input} | tail -n +2 | egrep -v "^[XYM]" | sort -k1,1n -k2,2n -k3,3 -k4,4) \
-            <(zcat {input} | tail -n +2 | egrep    "^[XYM]" | sort -k1,1  -k2,2n -k3,3 -k4,4) \
+            <(zcat {input} | tail -n +2 | awk -F $'\t' 'BEGIN {{ OFS=FS }} ($2 !~ /[XYM]/)' | sort -k2,2n -k3,3n -k4,4 -k5,5) \
+            <(zcat {input} | tail -n +2 | awk -F $'\t' 'BEGIN {{ OFS=FS }} ($2  ~ /[XYM]/)' | sort -k2,2  -k3,3n -k4,4 -k5,5) \
         | bgzip -c \
         > {output.tsv}
-        tabix -S 1 -s 1 -b 2 -e 2 -f {output.tsv}
+        tabix -S 1 -s 2 -b 3 -e 3 -f {output.tsv}
         
         cd $(dirname {output.tsv})
         md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5

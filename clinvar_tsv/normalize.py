@@ -160,25 +160,23 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
         for column in columns:
             if column not in data.keys():
                 data[column] = ""
-        pos = int(data["pos"])
+        pos = int(data["position"])
         # Normalize "chr" prefix towards reference and fix M/MT
-        if ref_chr_prefix == has_chr(data["chrom"]):
-            chrom = data["chrom"]
-            if chrom.endswith("MT"):
-                chrom = "chrM"
+        if ref_chr_prefix == has_chr(data["chromosome"]):
+            chrom = data["chromosome"]
         elif ref_chr_prefix:
-            chrom = "chr%s" % data["chrom"]
-            if chrom.endswith("MT"):
-                chrom = "chrM"
+            chrom = "chr%s" % data["chromosome"]
         else:
             chrom = data["chrom"][3:]
+        if ref_chr_prefix and chrom.endswith("MT"):
+            chrom = "chrM"
         # Perform normalization
         try:
-            _, pos, data["ref"], data["alt"] = normalize(
-                pysam_fasta, chrom, pos, data["ref"], data["alt"]
+            _, pos, data["reference"], data["alternative"] = normalize(
+                pysam_fasta, chrom, pos, data["reference"], data["alternative"]
             )
-            if data["chrom"].startswith("chr"):
-                data["chrom"] = data["chrom"][3:]
+            if data["chromosome"].startswith("chr"):
+                data["chromosome"] = data["chromosome"][3:]
         except RefEqualsAltError as e:
             sys.stderr.write("\n" + str(e) + "\n")
             ref_equals_alt += 1
@@ -191,7 +189,7 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             sys.stderr.write("\n" + str(e) + "\n")
             invalid_nucleotide += 1
             continue
-        data["pos"] = str(pos)
+        data["position"] = str(pos)
         outfile.write("\t".join([data[column] for column in columns]) + "\n")
         counter += 1
         if verbose and counter % 1000 == 0:

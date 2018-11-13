@@ -22,14 +22,15 @@ MENTIONS_PUBMED_REGEX = "(?:PubMed|PMID)(.*)"
 
 #: Regular expression for grepping out PubMedIDs. ``group(1)`` will be the first PubMed ID, ``group(2)`` will be all
 #: remaining text.
-EXTRACT_PUBMED_ID_REGEX = "[^0-9]+([0-9]+)[^0-9](.*)"
+EXTRACT_PUBMED_ID_REGEX = "[^0-9]+([0-9]{1,10})[^0-9](.*)"
 
 #: Header to write to the TSV file.
 HEADER = [
-    "chrom",
-    "pos",
-    "ref",
-    "alt",
+    "release",
+    "chromosome",
+    "position",
+    "reference",
+    "alternative",
     "start",
     "stop",
     "strand",
@@ -77,6 +78,25 @@ def remove_newlines_and_tabs(s):
     return re.sub("[\t\n\r]", " ", s)
 
 
+def convert_postgres_tsv(val):
+    """Convert value into PostgreSQL TSV value."""
+
+    def escape_str(x):
+        if isinstance(x, str):
+            return '"""%s"""' % x
+        elif x is None:
+            return "NULL"
+        else:
+            return str(x)
+
+    if isinstance(val, list):
+        return "{%s}" % ",".join([escape_str(v) for v in val])
+    elif val is None:
+        return ""
+    else:
+        return str(val)
+
+
 class ClinvarParser:
     """Helper class for parsing Clinvar XML"""
 
@@ -103,11 +123,11 @@ class ClinvarParser:
     def _write_row(self, output, row):
         if self.genome_build == "GRCh38":
             # Adjust contig name to be the one in hs38.
-            if not row["chrom"].startswith("chr"):
-                row["chrom"] = "chr" + row["chrom"]
-            if row["chrom"] == "chrMT":
-                row["chrom"] = "chrM"
-        output.write("\t".join([str(row[field]) for field in HEADER]))
+            if not row["chromosome"].startswith("chr"):
+                row["chromosome"] = "chr" + row["chromosome"]
+            if row["chromosome"] == "chrMT":
+                row["chromosome"] = "chrM"
+        output.write("\t".join([convert_postgres_tsv(row[field]) for field in HEADER]))
         output.write("\n")
 
     def _write_header(self, output):
@@ -180,8 +200,8 @@ class ClinvarParser:
             **row,
             "variation_id": measure_set.attrib.get("ID"),
             "variation_type": measure_set.attrib.get("Type"),
-            "scv": ";".join(sorted(set(self._yield_scvs_in_clinvar_set(clinvar_set)))),
-            "all_pmids": ";".join(sorted(set(self._yield_all_pmids_in_clinvar_set(clinvar_set)))),
+            "scv": list(sorted(set(self._yield_scvs_in_clinvar_set(clinvar_set)))),
+            "all_pmids": list(sorted(set(self._yield_all_pmids_in_clinvar_set(clinvar_set)))),
             **self._find_submitters_in_clinvar_set(clinvar_set),
             **self._find_review_significance_last_evaluted_in_clinvar_set(clinvar_set),
             **self._find_ordered_review_status_and_significance(clinvar_set),
@@ -211,7 +231,7 @@ class ClinvarParser:
         for citation in clinvar_set.findall(".//Citation"):
             for id_node in citation.findall(".//ID"):
                 if id_node.attrib.get("Source") == "PubMed":
-                    yield id_node.text
+                    yield int(id_node.text.replace(".", ""))
 
         # Now find the Comment nodes, regex your way through the comments and extract anything that appears to be a
         # PMID.
@@ -224,7 +244,7 @@ class ClinvarParser:
                     if pubmed_id_extraction is None:
                         break
                     elif pubmed_id_extraction.group(1) is not None:
-                        yield pubmed_id_extraction.group(1)
+                        yield int(pubmed_id_extraction.group(1))
                         if pubmed_id_extraction.group(2) is not None:
                             remaining_text = pubmed_id_extraction.group(2)
 
@@ -243,12 +263,12 @@ class ClinvarParser:
                 submitters_ordered.append(submitter_node.attrib["submitter"].replace(";", ","))
         # Field all_submitters will get deduplicated while submitters_ordered won't
         return {
-            "submitters_ordered": ";".join(submitters_ordered),
-            "all_submitters": ";".join(set(submitters_ordered)),
+            "submitters_ordered": submitters_ordered,
+            "all_submitters": list(sorted((set(submitters_ordered)))),
         }
 
     def _find_review_significance_last_evaluted_in_clinvar_set(self, clinvar_set):
-        result = {"review_status": "", "clinical_significance": "", "last_evaluated": "0000-00-00"}
+        result = {"review_status": "", "clinical_significance": "", "last_evaluated": ""}
         clinical_significance = clinvar_set.find(
             ".//ReferenceClinVarAssertion/ClinicalSignificance"
         )
@@ -259,9 +279,7 @@ class ClinvarParser:
                 ".//Description"
             ).text.lower()
         if clinical_significance.attrib.get("DateLastEvaluated") is not None:
-            result["last_evaluated"] = clinical_significance.attrib.get(
-                "DateLastEvaluated", "0000-00-00"
-            )
+            result["last_evaluated"] = clinical_significance.attrib.get("DateLastEvaluated", "")
         return result
 
     def _find_ordered_review_status_and_significance(self, clinvar_set):
@@ -284,7 +302,7 @@ class ClinvarParser:
             if date is not None:
                 dates_ordered.append(date.text)
             else:  # pragma: no cover
-                dates_ordered.append("")
+                dates_ordered.append(None)
         assert len(review_status_ordered) == len(clinical_significance_ordered)
         assert len(review_status_ordered) == len(dates_ordered)
         keys = (
@@ -295,10 +313,10 @@ class ClinvarParser:
             "likely_benign",
         )
         result = {
-            "review_status_ordered": ";".join(review_status_ordered),
-            "clinical_significance_ordered": ";".join(clinical_significance_ordered),
+            "review_status_ordered": review_status_ordered,
+            "clinical_significance_ordered": clinical_significance_ordered,
             **{key: clinical_significance_ordered.count(key) for key in keys},
-            "dates_ordered": ";".join(dates_ordered),
+            "dates_ordered": dates_ordered,
         }
         return result
 
@@ -348,10 +366,10 @@ class ClinvarParser:
             result["origin"].append(origin.text)
         # Transform the result
         result = {
-            key: value if key == "all_traits" else sorted(set(value))
+            key: value if key == "all_traits" else list(sorted(set(value)))
             for key, value in result.items()
         }
-        result = {key: ";".join(map(replace_semicolons, value)) for key, value in result.items()}
+        result = {key: list(map(replace_semicolons, value)) for key, value in result.items()}
         return result
 
     def _get_symbol_from_measure_set(self, measure_set):
@@ -402,10 +420,11 @@ class ClinvarParser:
 
         # Build result
         return {
-            "chrom": genomic_location.attrib["Chr"],
-            "pos": genomic_location.attrib["start"],
-            "ref": genomic_location.attrib["referenceAllele"],
-            "alt": genomic_location.attrib["alternateAllele"],
+            "release": self.genome_build,
+            "chromosome": genomic_location.attrib["Chr"],
+            "position": genomic_location.attrib["start"],
+            "reference": genomic_location.attrib["referenceAllele"],
+            "alternative": genomic_location.attrib["alternateAllele"],
             "start": genomic_location.attrib["start"],
             "stop": genomic_location.attrib["stop"],
             "strand": strand,
@@ -434,9 +453,9 @@ class ClinvarParser:
                             ":".join([xref.attrib.get("ID"), attribute_value])
                         )
         return {
-            "molecular_consequence": remove_newlines_and_tabs(
-                ";".join(map(replace_semicolons, molecular_consequence))
-            ),
+            "molecular_consequence": [
+                remove_newlines_and_tabs(replace_semicolons(x)) for x in molecular_consequence
+            ],
             "hgvs_c": hgvs_c,
             "hgvs_p": hgvs_p,
         }
