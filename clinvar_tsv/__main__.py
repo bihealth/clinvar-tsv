@@ -33,7 +33,7 @@ def run_main(args):
         "force_incomplete": True,
         "cores": 8,
     }
-    return snakemake.snakemake(**kwargs)
+    return not snakemake.snakemake(**kwargs)
 
 
 def open_maybe_gzip(path, mode):
