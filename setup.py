@@ -47,9 +47,7 @@ setup(
     url="https://github.com/bihealth/clinvar-tsv",
     packages=find_packages(),
     package_dir={"clinvar_tsv": "clinvar_tsv"},
-    entry_points={"console_scripts": [
-        "clinvar_tsv = clinvar_tsv.__main__:main",
-    ]},
+    entry_points={"console_scripts": ["clinvar_tsv = clinvar_tsv.__main__:main"]},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",

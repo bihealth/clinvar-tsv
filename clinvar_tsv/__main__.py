@@ -10,6 +10,7 @@ import sys
 import snakemake
 
 from . import parse_clinvar_xml, normalize
+from clinvar_tsv import __version__
 
 
 def run_inspect(args):
@@ -73,6 +74,10 @@ def run(args):
 def main(argv=None):
     """Main entry point before parsing command line arguments."""
     parser = argparse.ArgumentParser("clinvar-tsv")
+
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s {version}".format(version=__version__)
+    )
 
     subparsers = parser.add_subparsers()
     subparsers.required = True
