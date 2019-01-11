@@ -3,6 +3,12 @@ Clinvar-TSV Changelog
 =====================
 
 ------
+v0.1.1
+------
+
+- Fixing installation of Snakefile.
+
+------
 v0.1.0
 ------
 
