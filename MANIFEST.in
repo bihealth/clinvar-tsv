@@ -12,7 +12,6 @@ recursive-exclude * *.py[co]
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
 include versioneer.py
 include clinvar_tsv/_version.py
+include clinvar_tsv/Snakefile
 
 include requirements.txt requirements/*.txt
-include clinvar_tsv/_version.py
-include clinvar_tsv/Snakefile
