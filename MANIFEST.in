@@ -14,3 +14,5 @@ include versioneer.py
 include clinvar_tsv/_version.py
 
 include requirements.txt requirements/*.txt
+include clinvar_tsv/_version.py
+include clinvar_tsv/Snakefile
