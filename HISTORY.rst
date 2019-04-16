@@ -2,6 +2,12 @@
 Clinvar-TSV Changelog
 =====================
 
+-----------------
+HEAD (unreleased)
+-----------------
+
+- Fixing bug in setting clinical significance flags.
+
 ------
 v0.1.1
 ------
