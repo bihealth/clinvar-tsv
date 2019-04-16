@@ -295,7 +295,7 @@ class ClinvarParser:
                 review_status_ordered.append("")
             significance = sig_elem.find(".//Description")
             if significance is not None:
-                clinical_significance_ordered.append(significance.text.lower())
+                clinical_significance_ordered.append(significance.text.lower().replace(" ", "_"))
             else:  # pragma: no cover
                 clinical_significance_ordered.append("")
             date = sig_elem.find(".//DateLastEvaluated")

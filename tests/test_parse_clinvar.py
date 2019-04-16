@@ -96,13 +96,15 @@ def test_parse_clinvar_snv_grch37(input_clinvar_snv, output_single, output_multi
     # Check subsequent
     lines_single = load_tsv(output_single)
     assert len(lines_single) == 1
-    assert lines_single[0][:5] == ["13", "95228658", "T", "C", "95228658"]
+    assert lines_single[0][:6] == ["GRCh37", "13", "95228658", "T", "C", "95228658"]
     assert lines_single[0][-1:] == ["0"]
+    # Check clinical significance
+    assert lines_single[0][19:24] == ['0', '1', '0', '0', '0']
     lines_multi = load_tsv(output_multi)
     assert lines_multi == []
 
 
-def test_parse_clinvar_snv_grch39(input_clinvar_snv, output_single, output_multi):
+def test_parse_clinvar_snv_grch38(input_clinvar_snv, output_single, output_multi):
     """Test case of simple SNV for GRCh38"""
     # Parse input file
     parser = ClinvarParser(input_clinvar_snv, output_single, output_multi, "GRCh38")
@@ -112,8 +114,10 @@ def test_parse_clinvar_snv_grch39(input_clinvar_snv, output_single, output_multi
     # Check subsequent
     lines_single = load_tsv(output_single)
     assert len(lines_single) == 1
-    assert lines_single[0][:5] == ["chr13", "94576404", "T", "C", "94576404"]
+    assert lines_single[0][:6] == ["GRCh38", "chr13", "94576404", "T", "C", "94576404"]
     assert lines_single[0][-1:] == ["0"]
+    # Check clinical significance
+    assert lines_single[0][19:24] == ['0', '1', '0', '0', '0']
     lines_multi = load_tsv(output_multi)
     assert lines_multi == []
 
@@ -135,9 +139,9 @@ def test_parse_clinvar_two_measure_sets_grch37(
     assert lines_single == []
     lines_multi = load_tsv(output_multi)
     assert len(lines_multi) == 2
-    assert lines_multi[0][:5] == ["7", "103276772", "C", "T", "103276772"]
+    assert lines_multi[0][:6] == ["GRCh37", "7", "103276772", "C", "T", "103276772"]
     assert lines_multi[0][-1:] == ["1"]
-    assert lines_multi[1][:5] == ["7", "103132416", "A", "C", "103132416"]
+    assert lines_multi[1][:6] == ["GRCh37", "7", "103132416", "A", "C", "103132416"]
     assert lines_multi[1][-1:] == ["1"]
 
 
@@ -158,7 +162,7 @@ def test_parse_clinvar_two_measure_sets_grch38(
     assert lines_single == []
     lines_multi = load_tsv(output_multi)
     assert len(lines_multi) == 2
-    assert lines_multi[0][:5] == ["chr7", "103636325", "C", "T", "103636325"]
+    assert lines_multi[0][:6] == ["GRCh38", "chr7", "103636325", "C", "T", "103636325"]
     assert lines_multi[0][-1:] == ["1"]
-    assert lines_multi[1][:5] == ["chr7", "103491969", "A", "C", "103491969"]
+    assert lines_multi[1][:6] == ["GRCh38", "chr7", "103491969", "A", "C", "103491969"]
     assert lines_multi[1][-1:] == ["1"]
