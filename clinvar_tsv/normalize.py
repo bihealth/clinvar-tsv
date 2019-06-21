@@ -123,7 +123,7 @@ def normalize(pysam_fasta, chrom, start, end, bin_, ref, alt):
             preceding_base = pysam_fasta.fetch(chrom, start - 2, start - 1)
             ref = preceding_base + ref
             alt = preceding_base + alt
-            pos = pos - 1
+            start = start - 1
             keep_working = True
     # This second loop removes excess nucleotides on the left. This is Algorithm 1 lines 7-8.
     while len(ref) > 1 and len(alt) > 1 and ref[0] == alt[0]:
@@ -143,7 +143,7 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
     """
     This function takes a tab-delimited file with a header line containing columns
     named chrom, pos, ref, and alt, plus any other columns. It normalizes the
-    chrom, pos, ref, and alt, and writes all columns out to another file.
+    chrom, start, end, ref, and alt, and writes all columns out to another file.
     """
     pysam_fasta = pysam.FastaFile(reference_fasta)  # create a pysam object of the reference genome
     ref_chr_prefix = any(map(has_chr, pysam_fasta.references))
