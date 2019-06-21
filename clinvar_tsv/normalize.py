@@ -32,6 +32,7 @@ import sys
 import functools
 import pysam
 import argparse
+import binning
 
 
 class RefEqualsAltError(Exception):
@@ -70,18 +71,18 @@ class WrongRefError(Exception):
         return repr(self.value)
 
 
-def normalize(pysam_fasta, chrom, pos, ref, alt):
+def normalize(pysam_fasta, chrom, start, end, bin_, ref, alt):
     """
     Accepts a pysam FastaFile object pointing to the reference genome, and
-    chrom, pos, ref, alt genomic coordinates, and normalizes them.
+    chrom, start, end, bin_, ref, alt genomic coordinates, and normalizes them.
     """
-    pos = int(pos)  # make sure position is an integer
+    start = int(start)  # make sure position is an integer
     ref = ref.upper()
     alt = alt.upper()
     # Remove variants that contain invalid nucleotides
     if any(letter not in ["A", "C", "G", "T", "N", "-"] for letter in ref + alt):
         raise InvalidNucleotideSequenceError(
-            "Invalid nucleotide sequence: %s %s %s %s" % (chrom, pos, ref, alt)
+            "Invalid nucleotide sequence: %s %s %s %s %s" % (chrom, start, end, ref, alt)
         )
     # use blanks instead of hyphens
     if ref == "-":
@@ -89,17 +90,17 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
     if alt == "-":
         alt = ""
     # check whether the REF is correct
-    true_ref = pysam_fasta.fetch(chrom, pos - 1, pos - 1 + len(ref)).upper()
+    true_ref = pysam_fasta.fetch(chrom, start - 1, start - 1 + len(ref)).upper()
     if ref != true_ref:
         raise WrongRefError(
-            "Incorrect REF value: %s %s %s %s (actual REF should be %s)"
-            % (chrom, pos, ref, alt, true_ref)
+            "Incorrect REF value: %s %s %s %s %s (actual REF should be %s)"
+            % (chrom, start, end, ref, alt, true_ref)
         )
     # Prevent infinte loops in cases where REF == ALT.
     # We have encountered this error in genomic coordinates from the ClinVar XML file
     if ref == alt:
         raise RefEqualsAltError(
-            "The REF and ALT allele are the same: %s %s %s %s" % (chrom, pos, ref, alt)
+            "The REF and ALT allele are the same: %s %s %s %s %s" % (chrom, start, end, ref, alt)
         )
     # Time-saving shortcut for SNPs that are already minimally represented
     if (
@@ -108,7 +109,7 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
         and ref in ["A", "C", "G", "T"]
         and alt in ["A", "C", "G", "T"]
     ):
-        return chrom, pos, ref, alt
+        return chrom, start, end, bin_, ref, alt
     # This first loop left-aligns and removes excess nucleotides on the right.
     # This is Algorithm 1 lines 1-6 from Tan et al 2015
     keep_working = True
@@ -119,7 +120,7 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
             alt = alt[:-1]
             keep_working = True
         if len(ref) == 0 or len(alt) == 0:
-            preceding_base = pysam_fasta.fetch(chrom, pos - 2, pos - 1)
+            preceding_base = pysam_fasta.fetch(chrom, start - 2, start - 1)
             ref = preceding_base + ref
             alt = preceding_base + alt
             pos = pos - 1
@@ -128,8 +129,9 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
     while len(ref) > 1 and len(alt) > 1 and ref[0] == alt[0]:
         ref = ref[1:]
         alt = alt[1:]
-        pos = pos + 1
-    return chrom, pos, ref, alt
+        start = start + 1
+    end = start + len(ref) - 1
+    return chrom, start, end, binning.assign_bin(start - 1, end), ref, alt
 
 
 def has_chr(s):
@@ -160,7 +162,8 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
         for column in columns:
             if column not in data.keys():
                 data[column] = ""
-        pos = int(data["position"])
+        start = int(data["start"])
+        end = int(data["end"])
         # Normalize "chr" prefix towards reference and fix M/MT
         if ref_chr_prefix == has_chr(data["chromosome"]):
             chrom = data["chromosome"]
@@ -172,8 +175,8 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             chrom = "chrM"
         # Perform normalization
         try:
-            _, pos, data["reference"], data["alternative"] = normalize(
-                pysam_fasta, chrom, pos, data["reference"], data["alternative"]
+            _, start, end, bin_, data["reference"], data["alternative"] = normalize(
+                pysam_fasta, chrom, start, end, data["bin"], data["reference"], data["alternative"]
             )
             if data["chromosome"].startswith("chr"):
                 data["chromosome"] = data["chromosome"][3:]
@@ -189,7 +192,9 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             sys.stderr.write("\n" + str(e) + "\n")
             invalid_nucleotide += 1
             continue
-        data["position"] = str(pos)
+        data["start"] = str(start)
+        data["end"] = str(end)
+        data["bin"] = str(bin_)
         outfile.write("\t".join([data[column] for column in columns]) + "\n")
         counter += 1
         if verbose and counter % 1000 == 0:

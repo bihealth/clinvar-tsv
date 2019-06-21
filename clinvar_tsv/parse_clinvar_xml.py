@@ -12,6 +12,7 @@ from collections import defaultdict
 import logging
 import re
 import xml.etree.ElementTree as ET
+import binning
 
 from .exceptions import XmlParseException, NoSequenceLocation
 
@@ -28,11 +29,11 @@ EXTRACT_PUBMED_ID_REGEX = "[^0-9]+([0-9]{1,10})[^0-9](.*)"
 HEADER = [
     "release",
     "chromosome",
-    "position",
+    "start",
+    "end",
+    "bin",
     "reference",
     "alternative",
-    "start",
-    "stop",
     "strand",
     "variation_type",
     "variation_id",
@@ -422,11 +423,13 @@ class ClinvarParser:
         return {
             "release": self.genome_build,
             "chromosome": genomic_location.attrib["Chr"],
-            "position": genomic_location.attrib["start"],
+            "start": genomic_location.attrib["start"],
+            "end": genomic_location.attrib["stop"],
+            "bin": binning.assign_bin(
+                int(genomic_location.attrib["start"]) - 1, int(genomic_location.attrib["stop"])
+            ),
             "reference": genomic_location.attrib["referenceAllele"],
             "alternative": genomic_location.attrib["alternateAllele"],
-            "start": genomic_location.attrib["start"],
-            "stop": genomic_location.attrib["stop"],
             "strand": strand,
         }
 

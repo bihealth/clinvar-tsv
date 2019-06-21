@@ -7,6 +7,8 @@ HEAD (unreleased)
 -----------------
 
 - Fixing bug in setting clinical significance flags.
+- Added column for UCSC bins.
+  Removed ``position`` and ``stop`` column, added ``end`` column.
 
 ------
 v0.1.1
