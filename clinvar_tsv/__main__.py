@@ -38,9 +38,9 @@ def run_main(args):
 
 
 def open_maybe_gzip(path, mode):
-    try:
+    if path.endswith(".gz"):
         return gzip.open(path, mode)
-    except ValueError:
+    else:
         return open(path, mode)
 
 
