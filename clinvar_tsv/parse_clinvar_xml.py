@@ -8,64 +8,62 @@ Reference on clinvar XML tag:
 - ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/README
 """
 
-from collections import defaultdict
-import logging
+# TODO:
+#  - extract ACMG rating
+#  - extract how assertion level
+#  - add star fields
+
+import datetime
+import json
+import typing
 import re
 import xml.etree.ElementTree as ET
+from dateutil.parser import isoparse
+from itertools import chain
 
-from .exceptions import XmlParseException, NoSequenceLocation
+import attr
+import cattr
+import binning
+from logzero import logger
+import tqdm
+
+#: Mapping from review status to gold stars.
+GOLD_STAR_MAP = {
+    "no assertion provided": 0,
+    "no assertion criteria provided": 0,
+    "criteria provided, single submitter": 1,
+    "criteria provided, multiple submitters, no conflicts": 2,
+    "criteria provided, conflicting interpretations": 1,
+    "reviewed by expert panel": 3,
+    "practice guideline": 4,
+}
 
 
-#: Regular expression for grepping out PubMed mentions.  ``group(1)`` will be all the text after the word PubMed or
-#: # PMID.
-MENTIONS_PUBMED_REGEX = "(?:PubMed|PMID)(.*)"
+TSV_HEADER = "\t".join(
+    (
+        "release",
+        "chromosome",
+        "start",
+        "end",
+        "bin",
+        "reference",
+        "alternative",
+        "variation_type",
+        "variation_id",
+        "rcv",
+        "gold_stars",
+        "review_status",
+        "pathogenicity",
+        "details",
+    )
+)
 
-#: Regular expression for grepping out PubMedIDs. ``group(1)`` will be the first PubMed ID, ``group(2)`` will be all
-#: remaining text.
-EXTRACT_PUBMED_ID_REGEX = "[^0-9]+([0-9]{1,10})[^0-9](.*)"
 
-#: Header to write to the TSV file.
-HEADER = [
-    "release",
-    "chromosome",
-    "position",
-    "reference",
-    "alternative",
-    "start",
-    "stop",
-    "strand",
-    "variation_type",
-    "variation_id",
-    "rcv",
-    "scv",
-    "allele_id",
-    "symbol",
-    "hgvs_c",
-    "hgvs_p",
-    "molecular_consequence",
-    "clinical_significance",
-    "clinical_significance_ordered",
-    "pathogenic",
-    "likely_pathogenic",
-    "uncertain_significance",
-    "likely_benign",
-    "benign",
-    "review_status",
-    "review_status_ordered",
-    "last_evaluated",
-    "all_submitters",
-    "submitters_ordered",
-    "all_traits",
-    "all_pmids",
-    "inheritance_modes",
-    "age_of_onset",
-    "prevalence",
-    "disease_mechanism",
-    "origin",
-    "xrefs",
-    "dates_ordered",
-    "multi",
-]
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime.datetime, datetime.date, datetime.time)):
+            return obj.isoformat()
+        return super().default(obj)
 
 
 def replace_semicolons(s, replace_with=":"):
@@ -78,200 +76,208 @@ def remove_newlines_and_tabs(s):
     return re.sub("[\t\n\r]", " ", s)
 
 
-def convert_postgres_tsv(val):
-    """Convert value into PostgreSQL TSV value."""
-
-    def escape_str(x):
-        if isinstance(x, str):
-            return '"""%s"""' % x
-        elif x is None:
-            return "NULL"
-        else:
-            return str(x)
-
-    if isinstance(val, list):
-        return "{%s}" % ",".join([escape_str(v) for v in val])
-    elif val is None:
-        return ""
-    else:
-        return str(val)
+TClinicalSignificance = typing.TypeVar("ClinicalSignificance")
+TReferenceClinVarAssertion = typing.TypeVar("ReferenceClinVarAssertion")
+TClinVarSet = typing.TypeVar("ClinVarSet")
 
 
-class ClinvarParser:
-    """Helper class for parsing Clinvar XML"""
+@attr.s(frozen=True, auto_attribs=True)
+class ClinicalSignificance:
+    """Represent clinical significance."""
 
-    def __init__(self, input_file, output_single, output_multi, genome_build, max_rows=None):
-        #: ``file``-like object to load the XML from
-        self.input = input_file
-        #: ``file``-like object to write single variants to
-        self.single = output_single
-        #: ``file``-like object to write multi variants to (haplotypes, compound het.)
-        self.multi = output_multi
-        #: The genome build, one of ``"GRCh37"`` or ``"GRCh38"``.
-        self.genome_build = genome_build
-        #: Number of written rows, used for progress disable.
-        self.written_rows = 0
-        #: Counter for skipped items
-        self.skipped_counter = {"missing SequenceLocation": 0}
-        #: Counters for single
-        self.single_counter = 0
-        #: Counters for multi
-        self.multi_counter = 0
-        #: Largest number of rows to write out (for testing only)
-        self.max_rows = max_rows
+    #: Date of last evaluation.
+    date_evaluated: datetime.date
+    #: Significance review status.
+    review_status: str
+    #: Significance description.
+    description: str
+    #: Comments.
+    comments: typing.Tuple[str, ...]
 
-    def _write_row(self, output, row):
-        if self.genome_build == "GRCh38":
-            # Adjust contig name to be the one in hs38.
-            if not row["chromosome"].startswith("chr"):
-                row["chromosome"] = "chr" + row["chromosome"]
-            if row["chromosome"] == "chrMT":
-                row["chromosome"] = "chrM"
-        output.write("\t".join([convert_postgres_tsv(row[field]) for field in HEADER]))
-        output.write("\n")
-
-    def _write_header(self, output):
-        output.write("\t".join(HEADER))
-        output.write("\n")
-
-    def run(self):
-        logging.info("Writing headers...")
-        self._write_header(self.single)
-        if self.multi.name != self.single.name and self.multi is not self.single:
-            self._write_header(self.multi)
-        logging.info("Parsing elements...")
-        for event, elem in ET.iterparse(self.input):
-            if elem.tag == "ClinVarSet" and event == "end":
-                self._process_clinvar_set(elem)
-                elem.clear()
-            if self.max_rows and self.written_rows >= self.max_rows:
-                logging.info(
-                    "Breaking out after writing %d rows (as configured)", self.written_rows
-                )
-                break
-        logging.info("Done parsing elements")
-
-    def _process_clinvar_set(self, clinvar_set):
-        """Process one ClinVarSet element
-
-        Yields `(output_file, record)`, can yield multiple in case of comp. het. variants.
-        """
-        # Find the one ClinVarAccession tag corresponding to the reference accession RCV*
-        rcv = clinvar_set.find("./ReferenceClinVarAssertion/ClinVarAccession")
-        if rcv.attrib.get("Type") != "RCV":  # pragma: no cover
-            raise XmlParseException(
-                "Assumed to find RCV record but found type: %s" % rcv.attrib.get("Type")
-            )
-
-        row = {"rcv": rcv.attrib.get("Acc")}
-
-        # There should only be one ReferenceClinVarAssertion
-        ref_clinvar_assertions = clinvar_set.findall(".//ReferenceClinVarAssertion")
-        if len(ref_clinvar_assertions) > 1:  # pragma: no cover
-            raise XmlParseException("Assumed to find only one ReferenceClinVarAssertion")
-
-        # Process all MeasureSet elements.  There can be multiple ones in the case of het. comp. variants.
-        # A good example for this is RCV000201320.
-        measure_sets = ref_clinvar_assertions[0].findall(".//MeasureSet")
-        rows = []
-        for measure_set in measure_sets:
-            rows += list(self._process_measure_set({**row}, clinvar_set, measure_set))
-        if rows:
-            if len(rows) > 1:
-                self.multi_counter += 1
-                output_file = self.multi
-            else:
-                self.single_counter += 1
-                output_file = self.single
-            for row in rows:
-                self._write_row(output_file, {**row, "multi": int(len(rows) > 1)})
-            self.written_rows += 1
-            logging.info(
-                "%d entries completed %s, %d total",
-                self.written_rows,
-                ", ".join("%s skipped due to %s" % (v, k) for k, v in self.skipped_counter.items()),
-                self.written_rows + sum(self.skipped_counter.values()),
-            )
-
-    def _process_measure_set(self, row, clinvar_set, measure_set):
-        """Process the given measure set."""
-        # Extend row with variation ID and type.
-        row = {
-            **row,
-            "variation_id": measure_set.attrib.get("ID"),
-            "variation_type": measure_set.attrib.get("Type"),
-            "scv": list(sorted(set(self._yield_scvs_in_clinvar_set(clinvar_set)))),
-            "all_pmids": list(sorted(set(self._yield_all_pmids_in_clinvar_set(clinvar_set)))),
-            **self._find_submitters_in_clinvar_set(clinvar_set),
-            **self._find_review_significance_last_evaluted_in_clinvar_set(clinvar_set),
-            **self._find_ordered_review_status_and_significance(clinvar_set),
-            **self._find_disease_infos(clinvar_set),
-            "symbol": self._get_symbol_from_measure_set(measure_set),
-        }
-        measures = measure_set.findall(".//Measure")
-        for i, measure in enumerate(measures):
-            try:
-                yield from self._process_measure(row, clinvar_set, measure_set, measure)
-            except NoSequenceLocation:  # pragma: no cover
-                pass  # swallow
-
-    def _process_measure(self, row, clinvar_set, measure_set, measure):
-        symbol = row["symbol"] or self._get_symbol_from_measure(measure)
-        row = {
-            **row,
-            "symbol": symbol,
-            "allele_id": measure.attrib.get("ID"),
-            **self._get_genomic_location(measure, symbol),
-            **self._get_molecular_consequence(measure),
-        }
-        yield row
-
-    def _yield_all_pmids_in_clinvar_set(self, clinvar_set):
-        # Find all the Citation nodes, and get the PMIDs out of them.
-        for citation in clinvar_set.findall(".//Citation"):
-            for id_node in citation.findall(".//ID"):
-                if id_node.attrib.get("Source") == "PubMed":
-                    yield int(id_node.text.replace(".", ""))
-
-        # Now find the Comment nodes, regex your way through the comments and extract anything that appears to be a
-        # PMID.
-        for comment in clinvar_set.findall(".//Comment"):
-            mentions_pubmed = re.search(MENTIONS_PUBMED_REGEX, comment.text)
-            if mentions_pubmed is not None and mentions_pubmed.group(1) is not None:
-                remaining_text = mentions_pubmed.group(1)
-                while True:
-                    pubmed_id_extraction = re.search(EXTRACT_PUBMED_ID_REGEX, remaining_text)
-                    if pubmed_id_extraction is None:
-                        break
-                    elif pubmed_id_extraction.group(1) is not None:
-                        yield int(pubmed_id_extraction.group(1))
-                        if pubmed_id_extraction.group(2) is not None:
-                            remaining_text = pubmed_id_extraction.group(2)
-
-    def _yield_scvs_in_clinvar_set(self, clinvar_set):
-        # Find all SCV accession numbers from all additional ClinVarAssertion tags.
-        scv_numbers = []
-        for scv in clinvar_set.findall(".//ClinVarAssertion/ClinVarAccession"):
-            if scv.attrib.get("Type") == "SCV":
-                yield scv.attrib.get("Acc")
-
-    def _find_submitters_in_clinvar_set(self, clinvar_set):
-        # Now find any/all submitters.
-        submitters_ordered = []
-        for submitter_node in clinvar_set.findall(".//ClinVarSubmissionID"):
-            if submitter_node.attrib is not None and "submitter" in submitter_node.attrib:
-                submitters_ordered.append(submitter_node.attrib["submitter"].replace(";", ","))
-        # Field all_submitters will get deduplicated while submitters_ordered won't
-        return {
-            "submitters_ordered": submitters_ordered,
-            "all_submitters": list(sorted((set(submitters_ordered)))),
-        }
-
-    def _find_review_significance_last_evaluted_in_clinvar_set(self, clinvar_set):
-        result = {"review_status": "", "clinical_significance": "", "last_evaluated": ""}
-        clinical_significance = clinvar_set.find(
-            ".//ReferenceClinVarAssertion/ClinicalSignificance"
+    @staticmethod
+    def from_element(element: ET.Element) -> TClinicalSignificance:
+        return ClinicalSignificance(
+            date_evaluated=mapply(isoparse, element.attrib.get("DateLastEvaluated")),
+            review_status=element.find("ReviewStatus").text,
+            description=element.find("Description").text,
+            comments=tuple(elem.text for elem in element.findall("./Comment")),
         )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class ObservedDataDescription:
+    """Relevant information from ObservedData/Attribute[@Type='Description']."""
+
+    #: Optional description text.
+    description: typing.Optional[str]
+    #: PubMed IDs.
+    pubmed_ids: typing.Tuple[int]
+    #: OMIM IDs.
+    omim_ids: typing.Tuple[int]
+
+    @staticmethod
+    def from_element(element: ET.Element):
+        description = element.find("./Attribute[@Type='Description']").text
+        if description == "not provided":
+            return None
+        else:
+            pubmed_ids = [
+                int(elem.text) for elem in element.findall("./Citation/ID[@Source='PubMed']")
+            ]
+            omim_ids = [
+                int(elem.attrib.get("ID")) for elem in element.findall("./XRef[@Type='MIM']")
+            ]
+            return ObservedDataDescription(
+                description=description, pubmed_ids=tuple(pubmed_ids), omim_ids=tuple(omim_ids)
+            )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class ObservedIn:
+    """Relevant part of ObservedIn."""
+
+    #: The origin of the sample.
+    origin: str
+    #: The species of the sample.
+    species: str
+    #: Affected state
+    affected_status: str
+    #: Optional observation info.
+    observed_data_description: typing.Optional[ObservedDataDescription]
+    #: Comments.
+    comments: typing.Tuple[str, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        if element is None:
+            return None
+        for elem in element.findall("./ObservedData"):
+            if elem.find("./Attribute[@Type='Description']") is not None:
+                observed_data_description = ObservedDataDescription.from_element(elem)
+                break
+        else:  # no break above
+            observed_data_description = None
+        return ObservedIn(
+            origin=element.find("./Sample/Origin").text,
+            species=element.find("./Sample/Species").text,
+            affected_status=element.find("./Sample/AffectedStatus").text,
+            observed_data_description=observed_data_description,
+            comments=tuple(elem.text for elem in element.findall("./Comment")),
+        )
+
+
+def mapply(f, x):
+    if x is None:
+        return x
+    else:
+        return f(x)
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class SequenceLocation:
+    """The relevant information from a SequenceLocation."""
+
+    assembly: str
+    chrom: str
+    chrom_acc: str
+    start: typing.Optional[int]
+    stop: typing.Optional[int]
+    outer_start: typing.Optional[int]
+    outer_stop: typing.Optional[int]
+    inner_start: typing.Optional[int]
+    inner_stop: typing.Optional[int]
+    ref: typing.Optional[str]
+    alt: typing.Optional[str]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        if "positionVCF" in element.attrib:
+            ref = element.attrib["referenceAlleleVCF"]
+            alt = element.attrib["alternateAlleleVCF"]
+            start = int(element.attrib["positionVCF"])
+            stop = start + len(ref) - 1
+        else:
+            start = mapply(int, element.attrib.get("start"))
+            stop = mapply(int, element.attrib.get("stop"))
+            ref = element.attrib.get("referenceAlleleVCF")
+            alt = element.attrib.get("referenceAlleleVCF")
+        return SequenceLocation(
+            assembly=element.attrib.get("Assembly"),
+            chrom=element.attrib.get("Chr"),
+            chrom_acc=element.attrib.get("Accession"),
+            start=start,
+            stop=stop,
+            outer_start=mapply(int, element.attrib.get("outerStart")),
+            outer_stop=mapply(int, element.attrib.get("ousterStop")),
+            inner_start=mapply(int, element.attrib.get("innerStart")),
+            inner_stop=mapply(int, element.attrib.get("innerStop")),
+            ref=ref,
+            alt=alt,
+        )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class Measure:
+    """Represent the relevant informatino from a Measure."""
+
+    measure_type: str
+    sequence_locations: typing.Dict[str, SequenceLocation]
+    comments: typing.Tuple[str, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        return Measure(
+            measure_type=element.attrib.get("Type"),
+            sequence_locations={
+                elem.attrib.get("Assembly"): SequenceLocation.from_element(elem)
+                for elem in element.findall("./SequenceLocation")
+            },
+            comments=tuple(
+                elem.text
+                for elem in chain(
+                    element.findall("./MeasureRelationship/Comment"), element.findall("./Comment")
+                )
+            ),
+        )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class Trait:
+    """Represent the relevant information from a Trait."""
+
+    preferred_name: typing.Optional[str]
+    alternate_names: typing.Tuple[str, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        elem = element.find("./Name/ElementValue[@Type='Preferred']")
+        preferred_name = elem.text if elem is not None else None
+        alternate_names = [
+            elem.text for elem in element.findall("./Name/ElementValue[@Type='Alternate']")
+        ]
+        return Trait(preferred_name=preferred_name, alternate_names=tuple(alternate_names))
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class TraitSet:
+    """Represent the relevant information from a TraitSet."""
+
+    #: Value of the "Type" attribute.
+    set_type: str
+    #: Numeric identifier for the ClinVarSet.
+    id_no: typing.Optional[int]
+    #: The traits in the set.
+    traits: typing.Tuple[Trait, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        traits = [Trait.from_element(elem) for elem in element.findall("./Trait")]
+        return TraitSet(
+            set_type=element.attrib.get("Type"),
+            id_no=mapply(int, element.attrib.get("ID")),
+            traits=tuple(traits),
+        )
+<<<<<<< HEAD
         if clinical_significance.find(".//ReviewStatus") is not None:
             result["review_status"] = clinical_significance.find(".//ReviewStatus").text.lower()
         if clinical_significance.find(".//Description") is not None:
@@ -311,151 +317,280 @@ class ClinvarParser:
             "uncertain_significance",
             "benign",
             "likely_benign",
+=======
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class MeasureSet:
+    """Represent the relevant information from a MeasureSet."""
+
+    set_type: str
+    accession: str
+    measures: typing.Tuple[Measure, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        measures = [Measure.from_element(elem) for elem in element.findall("./Measure")]
+        return MeasureSet(
+            set_type=element.attrib.get("Type"),
+            accession=element.attrib.get("Acc"),
+            measures=tuple(measures),
+>>>>>>> Releasing v0.2.0, a complete refactorization.
         )
-        result = {
-            "review_status_ordered": review_status_ordered,
-            "clinical_significance_ordered": clinical_significance_ordered,
-            **{key: clinical_significance_ordered.count(key) for key in keys},
-            "dates_ordered": dates_ordered,
-        }
-        return result
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class GenotypeSet:
+    """Represents a genotype observation in ClinVar.
+
+    NB: we introduce dummy sets even for non-compound variants.
+    """
+
+    set_type: str
+    accession: str
+    measure_sets: typing.Tuple[MeasureSet, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        if element.tag == "GenotypeSet":
+            measure_sets = [
+                MeasureSet.from_element(elem) for elem in element.findall("./MeasureSet")
+            ]
+            return GenotypeSet(
+                set_type=element.attrib.get("Type"),
+                accession=element.attrib.get("Acc"),
+                measure_sets=tuple(measure_sets),
+            )
+        else:
+            assert element.tag == "MeasureSet"
+            return GenotypeSet(
+                set_type=element.attrib.get("Type"),
+                accession=element.attrib.get("Acc"),
+                measure_sets=(MeasureSet.from_element(element),),
+            )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class ReferenceClinVarAssertion:
+    """Represent the relevant parts of a ReferenceClinVarAssertion."""
+
+    #: Numeric identifier for the ClinVarSet.
+    id_no: id
+    #: Record status
+    record_status: str
+    #: Date of creation.
+    date_created: datetime.date
+    #: Date of last update.
+    date_updated: datetime.date
+
+    #: The accession number.
+    clinvar_accession: str
+    #: The version of the record.
+    version_no: int
+    #: Description where the variant was observed.
+    observed_in: typing.Optional[ObservedIn]
+    #: Genotype sets
+    genotype_sets: typing.Tuple[GenotypeSet, ...]
+    #: Trait sets.
+    trait_sets: typing.Tuple[TraitSet, ...]
+    #: Clinical significance entries.
+    clin_sigs: typing.Tuple[ClinicalSignificance]
+
+    #: Number of gold stars show on ClinVar.
+    gold_stars: int
+    #: Review status
+    review_status: str
+    #: Assertion of pathogenicity.
+    pathogenicity: str
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        gts_elem = element.findall("./GenotypeSet")
+        if gts_elem:
+            genotype_sets = [GenotypeSet.from_element(elem) for elem in gts_elem]
+        else:
+            genotype_sets = [
+                GenotypeSet.from_element(elem) for elem in element.findall("./MeasureSet")
+            ]
+        trait_sets = [TraitSet.from_element(elem) for elem in element.findall("./TraitSet")]
+        clin_sigs = [
+            ClinicalSignificance.from_element(elem)
+            for elem in element.findall("./ClinicalSignificance")
+        ]
+
+        review_status = "no assertion criteria provided"
+        pathogenicity = "uncertain significance"
+        gold_stars = 0
+        for clin_sig in clin_sigs:
+            review_status = clin_sig.review_status
+            pathogenicity = clin_sig.description.lower()
+            gold_stars = GOLD_STAR_MAP[review_status]
+
+        return ReferenceClinVarAssertion(
+            id_no=int(element.attrib.get("ID")),
+            record_status=element.find("RecordStatus").text,
+            date_created=isoparse(element.attrib.get("DateCreated")),
+            date_updated=isoparse(element.attrib.get("DateLastUpdated")),
+            clinvar_accession=element.find("ClinVarAccession").attrib.get("Acc"),
+            version_no=int(element.find("ClinVarAccession").attrib.get("Version")),
+            observed_in=ObservedIn.from_element(element.find("ObservedIn")),
+            genotype_sets=tuple(genotype_sets),
+            trait_sets=tuple(trait_sets),
+            clin_sigs=tuple(clin_sigs),
+            gold_stars=gold_stars,
+            review_status=review_status,
+            pathogenicity=pathogenicity,
+        )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class ClinVarAssertion:
+    """Represent the relevant parts of a ClinVarAssertion."""
+
+    #: Numeric identifier for the ClinVarSet.
+    id_no: id
+    #: Record status
+    record_status: str
+    #: Date of submission.
+    submitter_date: typing.Optional[datetime.date]
+
+    #: The accession number.
+    clinvar_accession: str
+    #: The version of the record.
+    version_no: int
+    #: Description where the variant was observed.
+    observed_in: typing.Optional[ObservedIn]
+    #: Genotype sets
+    genotype_sets: typing.Tuple[GenotypeSet, ...]
+    #: Trait sets.
+    trait_sets: typing.Tuple[TraitSet, ...]
+
+    @classmethod
+    def from_element(cls, element: ET.Element):
+        submitter_date = element.find("ClinVarSubmissionID").attrib.get("submitterDate")
+        gts_elem = element.findall("./GenotypeSet")
+        if gts_elem:
+            genotype_sets = [GenotypeSet.from_element(elem) for elem in gts_elem]
+        else:
+            genotype_sets = [
+                GenotypeSet.from_element(elem) for elem in element.findall("./MeasureSet")
+            ]
+        trait_sets = [TraitSet.from_element(elem) for elem in element.findall("./TraitSet")]
+        return ClinVarAssertion(
+            id_no=int(element.attrib.get("ID")),
+            record_status=element.find("RecordStatus").text,
+            submitter_date=isoparse(submitter_date) if submitter_date else None,
+            clinvar_accession=element.find("ClinVarAccession").attrib.get("Acc"),
+            version_no=int(element.find("ClinVarAccession").attrib.get("Version")),
+            observed_in=ObservedIn.from_element(element.find("ObservedIn")),
+            genotype_sets=tuple(genotype_sets),
+            trait_sets=tuple(trait_sets),
+        )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class ClinVarSet:
+    """Represent the relevant parts of a ClinVarSet."""
+
+    #: Numeric identifier for the ClinVarSet.
+    id_no: id
+    #: Record status
+    record_status: str
+    #: Record title
+    title: str
+    #: The ReferenceClinVarAssertion, if any.
+    ref_cv_assertion: typing.Optional[ReferenceClinVarAssertion]
+    #: The ClinVarAssertion objects, if any.
+    cv_assertions: typing.Tuple[ClinVarAssertion, ...]
 
     @staticmethod
-    def _disease_attribute_to_column(attribute_type):
-        if attribute_type == "ModeOfInheritance":
-            return "inheritance_modes"
-        elif attribute_type in ("age of onset", "prevalence", "disease mechanism"):
-            return attribute_type.replace(" ", "_")
-        else:
-            return None
+    def from_element(element: ET.Element) -> TClinVarSet:
+        return ClinVarSet(
+            id_no=int(element.attrib.get("ID")),
+            record_status=element.find("RecordStatus").text,
+            title=element.find("Title").text,
+            ref_cv_assertion=ReferenceClinVarAssertion.from_element(
+                element.find("ReferenceClinVarAssertion")
+            ),
+            cv_assertions=tuple(
+                ClinVarAssertion.from_element(element)
+                for element in element.findall("ClinVarAssertion")
+            ),
+        )
 
-    def _find_disease_infos(self, clinvar_set):
-        result = {
-            "all_traits": [],
-            "inheritance_modes": [],
-            "age_of_onset": [],
-            "prevalence": [],
-            "disease_mechanism": [],
-            "origin": [],
-            "xrefs": [],
-        }
-        for trait_set in clinvar_set.findall(".//TraitSet"):
-            disease_name_nodes = trait_set.findall(".//Name/ElementValue")
-            trait_values = [
-                disease_name_node.text
-                for disease_name_node in disease_name_nodes
-                if disease_name_node.attrib is not None
-                and disease_name_node.attrib.get("Type") == "Preferred"
-            ]
-            result["all_traits"] += trait_values
 
-            for attribute_node in trait_set.findall(".//AttributeSet/Attribute"):
-                attribute_type = attribute_node.attrib.get("Type")
-                column_name = self.__class__._disease_attribute_to_column(attribute_type)
-                column_value = attribute_node.text.strip()
-                if column_name and column_value:
-                    result[column_name].append(column_value)
+@attr.s(frozen=True, auto_attribs=True)
+class ReleaseSet:
+    """Root tag representation."""
 
-            # Put all the cross references one column, it may contains NCBI gene ID, conditions ID in disease
-            # databases.
-            for xref_node in trait_set.findall(".//XRef"):
-                xref_db = xref_node.attrib.get("DB")
-                xref_id = xref_node.attrib.get("ID")
-                result["xrefs"].append("%s:%s" % (xref_db, xref_id))
-        for origin in clinvar_set.findall(".//ReferenceClinVarAssertion/ObservedIn/Sample/Origin"):
-            result["origin"].append(origin.text)
-        # Transform the result
-        result = {
-            key: value if key == "all_traits" else list(sorted(set(value)))
-            for key, value in result.items()
-        }
-        result = {key: list(map(replace_semicolons, value)) for key, value in result.items()}
-        return result
+    #: The release date.
+    release_date: datetime.date
 
-    def _get_symbol_from_measure_set(self, measure_set):
-        result = ""
-        var_name = measure_set.find(".//Name/ElementValue").text
-        if var_name is not None:
-            match = re.search(r"\(([A-Za-z0-9]+)\)", var_name)
-            if match is not None:
-                result = match.group(1)
-        return result
+    @staticmethod
+    def from_element(element: ET.Element):
+        return ReleaseSet(release_date=isoparse(element.attrib.get("Dated")))
 
-    def _get_symbol_from_measure(self, measure):
-        for symbol in measure.findall(".//Symbol") or []:
-            if symbol.find("ElementValue").attrib.get("Type") == "Preferred":
-                return symbol.find("ElementValue").text
-        return ""
 
-    def _get_genomic_location(self, measure, symbol):
-        # Get SequenceLocation tag, if any.
-        for sequence_location in measure.findall(".//SequenceLocation"):
-            if sequence_location.attrib.get("Assembly") == self.genome_build:
-                attribs = [
-                    sequence_location.attrib.get(key)
-                    for key in ("Chr", "start", "referenceAllele", "alternateAllele")
-                ]
-                if all([x is not None for x in attribs]):
-                    genomic_location = sequence_location
-                    # break after finding the first non-empty locating matching our genome build
+class ClinvarParser:
+    """Helper class for parsing Clinvar XML"""
+
+    def __init__(self, input_file, out_b37, out_b38, max_rcvs=None):
+        #: ``file``-like object to load the XML from
+        self.input = input_file
+        #: ``file``-like object to write GRCh37 variants to
+        self.out_b37 = out_b37
+        #: ``file``-like object to write GRCh38 variants to
+        self.out_b38 = out_b38
+        #: Number of processed RCVs, used for progress disable.
+        self.rcvs = 0
+        #: Largest number of rcvs to process out (for testing only)
+        self.max_rcvs = max_rcvs
+
+    def run(self):
+        logger.info("Parsing elements...")
+        out_files = {"GRCh37": self.out_b37, "GRCh38": self.out_b38}
+        for out_file in out_files.values():
+            print(TSV_HEADER, file=out_file)
+        with tqdm.tqdm(unit="rcvs") as progress:
+            for event, elem in ET.iterparse(self.input):
+                if elem.tag == "ClinVarSet" and event == "end":
+                    self.rcvs += 1
+                    clinvar_set = ClinVarSet.from_element(elem)
+                    for genotype_set in clinvar_set.ref_cv_assertion.genotype_sets:
+                        for measure_set in genotype_set.measure_sets:
+                            for measure in measure_set.measures:
+                                for build, location in measure.sequence_locations.items():
+                                    if build not in out_files:
+                                        continue
+                                    elif location.ref is not None and location.alt is not None:
+                                        if len(location.ref) == 1 and len(location.alt) == 1:
+                                            variation_type = "snv"
+                                        elif len(location.ref) == len(location.alt):
+                                            variation_type = "snv"
+                                        else:
+                                            variation_type = "indel"
+                                        row = [
+                                            build,
+                                            location.chrom,
+                                            location.start,
+                                            location.stop,
+                                            binning.assign_bin(location.start - 1, location.stop),
+                                            location.ref,
+                                            location.alt,
+                                            variation_type,
+                                            clinvar_set.ref_cv_assertion.id_no,
+                                            clinvar_set.ref_cv_assertion.clinvar_accession,
+                                            clinvar_set.ref_cv_assertion.gold_stars,
+                                            clinvar_set.ref_cv_assertion.review_status,
+                                            clinvar_set.ref_cv_assertion.pathogenicity,
+                                            json.dumps(
+                                                cattr.unstructure(clinvar_set), cls=DateTimeEncoder
+                                            ).replace('"', '"""'),
+                                        ]
+                                        print("\t".join(map(str, row)), file=out_files[build])
+                        progress.update()
+                    elem.clear()
+                if self.max_rcvs and self.rcvs >= self.max_rcvs:
+                    logger.info("Breaking out after processing %d RCVs (as configured)", self.rcvs)
                     break
-        else:  # pragma: no cover
-            self.skipped_counter["missing SequenceLocation"] += 1
-            logging.debug("Skipping Measure because it has no location")
-            raise NoSequenceLocation("No sequence location in Measure")
-
-        # Get strand value
-        strand = ""
-        for measure_relationship in measure.findall(".//MeasureRelationship"):
-            if measure_relationship.find(".//Symbol/ElementValue").text != symbol:
-                continue
-            for sequence_location in measure_relationship.findall(".//SequenceLocation"):
-                if (
-                    "Strand" in sequence_location.attrib
-                    and genomic_location.attrib["Accession"]
-                    == sequence_location.attrib["Accession"]
-                ):
-                    strand = sequence_location.attrib["Strand"]
-                    break
-
-        # Build result
-        return {
-            "release": self.genome_build,
-            "chromosome": genomic_location.attrib["Chr"],
-            "position": genomic_location.attrib["start"],
-            "reference": genomic_location.attrib["referenceAllele"],
-            "alternative": genomic_location.attrib["alternateAllele"],
-            "start": genomic_location.attrib["start"],
-            "stop": genomic_location.attrib["stop"],
-            "strand": strand,
-        }
-
-    def _get_molecular_consequence(self, measure):
-        molecular_consequence = set()
-        hgvs_c = ""
-        hgvs_p = ""
-        attribute_set = measure.findall("./AttributeSet")
-        for attribute_node in attribute_set:
-            attribute_type = attribute_node.find("./Attribute").attrib.get("Type")
-            attribute_value = attribute_node.find("./Attribute").text
-            # Find hgvs_c
-            if attribute_type == "HGVS, coding, RefSeq" and "c." in attribute_value:
-                hgvs_c = attribute_value
-            # Find hgvs_p
-            if attribute_type == "HGVS, protein, RefSeq" and "p." in attribute_value:
-                hgvs_p = attribute_value
-            # Aggregate all molecular consequences
-            if attribute_type == "MolecularConsequence":
-                for xref in attribute_node.findall(".//XRef"):
-                    if xref.attrib.get("DB") == "RefSeq":
-                        # print xref.attrib.get('ID'), attribute_value
-                        molecular_consequence.add(
-                            ":".join([xref.attrib.get("ID"), attribute_value])
-                        )
-        return {
-            "molecular_consequence": [
-                remove_newlines_and_tabs(replace_semicolons(x)) for x in molecular_consequence
-            ],
-            "hgvs_c": hgvs_c,
-            "hgvs_p": hgvs_p,
-        }
+        logger.info("Done parsing elements")
