@@ -29,7 +29,6 @@ Usage: normalize.py -R $b37ref < bad_file.txt > good_file.txt
 """
 
 import sys
-import functools
 import pysam
 import argparse
 
@@ -95,7 +94,7 @@ def normalize(pysam_fasta, chrom, pos, ref, alt):
             "Incorrect REF value: %s %s %s %s (actual REF should be %s)"
             % (chrom, pos, ref, alt, true_ref)
         )
-    # Prevent infinte loops in cases where REF == ALT.
+    # Prevent infinite loops in cases where REF == ALT.
     # We have encountered this error in genomic coordinates from the ClinVar XML file
     if ref == alt:
         raise RefEqualsAltError(
@@ -200,30 +199,3 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             "Final counts of variants discarded:\nREF == ALT: %s\nWrong REF: %s\nInvalid nucleotide: %s\n"
             % (ref_equals_alt, wrong_ref, invalid_nucleotide)
         )
-
-
-"""
-Battery of test cases for normalize
-"""
-
-
-def test_normalize(pysam_fasta):
-    sys.stdout.write(
-        str(normalize(pysam_fasta, "7", 117199646, "CTT", "-")) + "\n"
-    )  # HGVS translation of CFTR p.F508del, should be ('7', 117199644, 'ATCT', 'A')
-    sys.stdout.write(
-        str(normalize(pysam_fasta, "13", 32914438, "T", "-")) + "\n"
-    )  # HGVS translation of a BRCA2 Ashkenazi founder variant, should be ('13', 32914437, 'GT', 'G')
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Python implementation of vt normalize")
-    parser.add_argument(
-        "-R",
-        "--reference_fasta",
-        type=str,
-        default="",
-        help="Path to FASTA file of reference genome. Must be samtools faidx'ed",
-    )
-    args = parser.parse_args()
-    normalize_tab_delimited_file(sys.stdin, sys.stdout, args.reference_fasta)

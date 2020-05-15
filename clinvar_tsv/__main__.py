@@ -38,23 +38,21 @@ def run_main(args):
 
 
 def open_maybe_gzip(path, mode):
-    try:
+    if path.endswith(".gz"):
         return gzip.open(path, mode)
-    except ValueError:
+    else:
         return open(path, mode)
 
 
 def run_parse_xml(args):
     """Parse XML file."""
-    build = {"b37": "GRCh37", "b38": "GRCh38"}
-    with open(args.output_single, "wt") as single_f:
-        with open(args.output_multi, "wt") as multi_f:
+    with open(args.output_b37, "wt") as output_b37:
+        with open(args.output_b38, "wt") as output_b38:
             parser = parse_clinvar_xml.ClinvarParser(
-                open_maybe_gzip(args.clinvar_xml, "rb"),
-                single_f,
-                multi_f,
-                genome_build=build[args.genome_build],
-                max_rows=args.max_rows,
+                input_file=open_maybe_gzip(args.clinvar_xml, "rb"),
+                out_b37=output_b37,
+                out_b38=output_b38,
+                max_rcvs=args.max_rcvs,
             )
             parser.run()
 
@@ -116,22 +114,13 @@ def main(argv=None):
     parser_parse_xml = subparsers.add_parser("parse_xml", help="Parse the Clinvar XML")
     parser_parse_xml.add_argument("--clinvar-xml", required=True, help="Path to Clinvar XML file.")
     parser_parse_xml.add_argument(
-        "--genome-build",
-        required=True,
-        help="The genome build this variant is for.",
-        choices=("b37", "b38"),
+        "--output-b37", required=True, help="Output path for GRCh37 file."
     )
     parser_parse_xml.add_argument(
-        "--output-single", required=True, help="Output path for single TSV file."
+        "--output-b38", required=True, help="Output path for GRCh38 file."
     )
     parser_parse_xml.add_argument(
-        "--output-multi", required=True, help="Output path to multi TSV file."
-    )
-    parser_parse_xml.add_argument(
-        "--max-rows",
-        required=False,
-        type=int,
-        help="Maximal number of rows to write out; for debugging.",
+        "--max-rcvs", required=False, type=int, help="Maximal number of RCV records to process."
     )
     parser_parse_xml.set_defaults(func=run_parse_xml)
 

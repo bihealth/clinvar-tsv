@@ -3,6 +3,13 @@ Clinvar-TSV Changelog
 =====================
 
 ------
+v0.2.0
+------
+
+- Complete refurbishing of XML parsing, using models based on python-attrs.
+- Removing old tests.
+
+------
 v0.1.1
 ------
 
