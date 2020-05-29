@@ -4,13 +4,13 @@
 black ==18.9b0
 
 # Versioneer is useful for version management
-versioneer ==0.18
+versioneer
 
 # Snakemake for running the workflow
-snakemake ==5.3.0
+snakemake
 
 # PySAM for FAI support
-pysam ==0.15.1
+pysam
 
 # Easy logging.
 logzero
@@ -27,3 +27,6 @@ interval-binning
 
 # Progress display.
 tqdm
+
+# Binning
+interval-binning
