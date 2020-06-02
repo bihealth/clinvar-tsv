@@ -277,47 +277,6 @@ class TraitSet:
             id_no=mapply(int, element.attrib.get("ID")),
             traits=tuple(traits),
         )
-<<<<<<< HEAD
-        if clinical_significance.find(".//ReviewStatus") is not None:
-            result["review_status"] = clinical_significance.find(".//ReviewStatus").text.lower()
-        if clinical_significance.find(".//Description") is not None:
-            result["clinical_significance"] = clinical_significance.find(
-                ".//Description"
-            ).text.lower()
-        if clinical_significance.attrib.get("DateLastEvaluated") is not None:
-            result["last_evaluated"] = clinical_significance.attrib.get("DateLastEvaluated", "")
-        return result
-
-    def _find_ordered_review_status_and_significance(self, clinvar_set):
-        """Get ordered version of review status and significance as well as the pathogenicity counts."""
-        review_status_ordered = []
-        clinical_significance_ordered = []
-        dates_ordered = []
-        for sig_elem in clinvar_set.findall(".//ClinVarAssertion/ClinicalSignificance"):
-            review_status = sig_elem.find(".//ReviewStatus")
-            if review_status is not None:
-                review_status_ordered.append(review_status.text.lower())
-            else:  # pragma: no cover
-                review_status_ordered.append("")
-            significance = sig_elem.find(".//Description")
-            if significance is not None:
-                clinical_significance_ordered.append(significance.text.lower().replace(" ", "_"))
-            else:  # pragma: no cover
-                clinical_significance_ordered.append("")
-            date = sig_elem.find(".//DateLastEvaluated")
-            if date is not None:
-                dates_ordered.append(date.text)
-            else:  # pragma: no cover
-                dates_ordered.append(None)
-        assert len(review_status_ordered) == len(clinical_significance_ordered)
-        assert len(review_status_ordered) == len(dates_ordered)
-        keys = (
-            "pathogenic",
-            "likely_pathogenic",
-            "uncertain_significance",
-            "benign",
-            "likely_benign",
-=======
 
 
 @attr.s(frozen=True, auto_attribs=True)
@@ -335,7 +294,6 @@ class MeasureSet:
             set_type=element.attrib.get("Type"),
             accession=element.attrib.get("Acc"),
             measures=tuple(measures),
->>>>>>> Releasing v0.2.0, a complete refactorization.
         )
 
 
@@ -566,7 +524,7 @@ class ClinvarParser:
                                         if len(location.ref) == 1 and len(location.alt) == 1:
                                             variation_type = "snv"
                                         elif len(location.ref) == len(location.alt):
-                                            variation_type = "snv"
+                                            variation_type = "mnv"
                                         else:
                                             variation_type = "indel"
                                         row = [

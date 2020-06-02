@@ -10,8 +10,7 @@ REF = {
 rule default:
     input:
         expand(
-            "output/clinvar_allele_trait_pairs.{mult}.{build}.tsv{ext}",
-            mult=("multi", "single"),
+            "output/clinvar.{build}.tsv{ext}",
             build=("b37", "b38"),
             ext=(".gz", ".gz.tbi", ".gz.md5", ".gz.tbi.md5"),
         )
@@ -40,15 +39,14 @@ rule parse_clinvar:
         release_xml="downloads/ClinVarFullRelease_00-latest.xml.gz",
         summary="downloads/variant_summary.txt.gz",
     output:
-        single=temp("parsed/clinvar_table_raw.single.{genome_build}.tsv"),
-        multi=temp("parsed/clinvar_table_raw.multi.{genome_build}.tsv"),
+        b37=temp("parsed/clinvar_table_raw.b37.tsv"),
+        b38=temp("parsed/clinvar_table_raw.b38.tsv"),
     shell:
         r"""
         clinvar_tsv parse_xml \
             --clinvar-xml {input.release_xml} \
-            --genome-build {wildcards.genome_build} \
-            --output-single {output.single} \
-            --output-multi {output.multi} \
+            --output-b37 {output.b37} \
+            --output-b38 {output.b38} \
             $(if [[ {config[debug]} == "True" ]]; then
                 echo "--max-rows 100"
             fi) 
@@ -57,9 +55,9 @@ rule parse_clinvar:
 
 rule normalize_clinvar:
     input:
-        tsv="parsed/clinvar_table_raw.{mult}.{genome_build}.tsv",
+        tsv="parsed/clinvar_table_raw.{genome_build}.tsv",
         reference=lambda wildcards: REF[wildcards.genome_build],
-    output: temp("normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv.gz"),
+    output: temp("normalized/clinvar_table_normalized.{genome_build}.tsv.gz"),
     shell:
         r"""
         clinvar_tsv normalize_tsv \
@@ -73,12 +71,12 @@ rule normalize_clinvar:
 
 
 rule sort_tabix_clinvar:
-    input: "normalized/clinvar_table_normalized.{mult}.{genome_build}.tsv.gz",
+    input: "normalized/clinvar_table_normalized.{genome_build}.tsv.gz",
     output:
-        tsv="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz",
-        tbi="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi",
-        tsv_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.md5",
-        tbi_md5="output/clinvar_allele_trait_pairs.{mult}.{genome_build}.tsv.gz.tbi.md5",
+        tsv="output/clinvar.{genome_build}.tsv.gz",
+        tbi="output/clinvar.{genome_build}.tsv.gz.tbi",
+        tsv_md5="output/clinvar.{genome_build}.tsv.gz.md5",
+        tbi_md5="output/clinvar.{genome_build}.tsv.gz.tbi.md5",
     shell:
         r"""
         cat \

@@ -159,7 +159,7 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
         for column in columns:
             if column not in data.keys():
                 data[column] = ""
-        pos = int(data["position"])
+        pos = int(data.get("position", data["start"]))
         # Normalize "chr" prefix towards reference and fix M/MT
         if ref_chr_prefix == has_chr(data["chromosome"]):
             chrom = data["chromosome"]
@@ -188,7 +188,11 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             sys.stderr.write("\n" + str(e) + "\n")
             invalid_nucleotide += 1
             continue
-        data["position"] = str(pos)
+        if "position" in columns:
+            data["position"] = str(pos)
+        else:
+            data["start"] = str(pos)
+            data["end"] = str(pos + len(data["reference"]) - 1)
         outfile.write("\t".join([data[column] for column in columns]) + "\n")
         counter += 1
         if verbose and counter % 1000 == 0:
