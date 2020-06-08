@@ -54,6 +54,8 @@ TSV_HEADER = "\t".join(
         "gold_stars",
         "review_status",
         "pathogenicity",
+        "origin",
+        "vcv",
         "details",
     )
 )
@@ -514,6 +516,10 @@ class ClinvarParser:
                 if elem.tag == "ClinVarSet" and event == "end":
                     self.rcvs += 1
                     clinvar_set = ClinVarSet.from_element(elem)
+                    if clinvar_set.ref_cv_assertion.observed_in:
+                        origin = clinvar_set.ref_cv_assertion.observed_in.origin
+                    else:
+                        origin = "."
                     for genotype_set in clinvar_set.ref_cv_assertion.genotype_sets:
                         for measure_set in genotype_set.measure_sets:
                             for measure in measure_set.measures:
@@ -541,6 +547,8 @@ class ClinvarParser:
                                             clinvar_set.ref_cv_assertion.gold_stars,
                                             clinvar_set.ref_cv_assertion.review_status,
                                             clinvar_set.ref_cv_assertion.pathogenicity,
+                                            origin,
+                                            measure_set.accession,
                                             json.dumps(
                                                 cattr.unstructure(clinvar_set), cls=DateTimeEncoder
                                             ).replace('"', '"""'),
