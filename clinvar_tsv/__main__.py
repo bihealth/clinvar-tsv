@@ -9,7 +9,7 @@ import sys
 
 import snakemake
 
-from . import parse_clinvar_xml, normalize
+from . import parse_clinvar_xml, normalize, merge_tsvs
 from clinvar_tsv import __version__
 
 
@@ -61,6 +61,12 @@ def run_normalize_tsv(args):
     with open(args.input_tsv, "rt") as input_tsv:
         with open(args.output_tsv, "wt") as output_tsv:
             normalize.normalize_tab_delimited_file(input_tsv, output_tsv, args.reference)
+
+
+def run_merge_tsvs(args):
+    with open(args.input_tsv, "rt") as input_tsv:
+        with open(args.output_tsv, "wt") as output_tsv:
+            merge_tsvs.merge_tsvs(input_tsv, output_tsv)
 
 
 def run(args):
@@ -137,6 +143,17 @@ def main(argv=None):
         "--output-tsv", required=True, help="Path to output TSV file."
     )
     parser_normalize_tsv.set_defaults(func=run_normalize_tsv)
+
+    # -----------------------------------------------------------------------
+    # Command: merge_tsvs
+    # -----------------------------------------------------------------------
+
+    parser_merge_tsvs = subparsers.add_parser(
+        "merge_tsvs", help="Merge TSV file (result: one per VCV)"
+    )
+    parser_merge_tsvs.add_argument("--input-tsv", required=True, help="Path to input TSV file.")
+    parser_merge_tsvs.add_argument("--output-tsv", required=True, help="Path to output TSV file.")
+    parser_merge_tsvs.set_defaults(func=run_merge_tsvs)
 
     args = parser.parse_args(argv)
     return run(args)

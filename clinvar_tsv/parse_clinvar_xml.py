@@ -266,7 +266,7 @@ class TraitSet:
 
     #: Value of the "Type" attribute.
     set_type: str
-    #: Numeric identifier for the ClinVarSet.
+    #: Numeric id_no for the ClinVarSet.
     id_no: typing.Optional[int]
     #: The traits in the set.
     traits: typing.Tuple[Trait, ...]
@@ -334,8 +334,8 @@ class GenotypeSet:
 class ReferenceClinVarAssertion:
     """Represent the relevant parts of a ReferenceClinVarAssertion."""
 
-    #: Numeric identifier for the ClinVarSet.
-    id_no: id
+    #: Numeric id_no for the ClinVarSet.
+    id_no: int
     #: Record status
     record_status: str
     #: Date of creation.
@@ -407,8 +407,8 @@ class ReferenceClinVarAssertion:
 class ClinVarAssertion:
     """Represent the relevant parts of a ClinVarAssertion."""
 
-    #: Numeric identifier for the ClinVarSet.
-    id_no: id
+    #: Numeric id_no for the ClinVarSet.
+    id_no: int
     #: Record status
     record_status: str
     #: Date of submission.
@@ -452,8 +452,8 @@ class ClinVarAssertion:
 class ClinVarSet:
     """Represent the relevant parts of a ClinVarSet."""
 
-    #: Numeric identifier for the ClinVarSet.
-    id_no: id
+    #: Numeric id_no for the ClinVarSet.
+    id_no: int
     #: Record status
     record_status: str
     #: Record title
@@ -477,6 +477,30 @@ class ClinVarSet:
                 for element in element.findall("ClinVarAssertion")
             ),
         )
+
+
+@attr.s(frozen=True, auto_attribs=True)
+class VariationClinVarRecord:
+    """Aggregated information of multiple ``ClinVarSet`` records."""
+
+    #: Genome build/release name.
+    release: str
+    #: Chromosome/contig name.
+    chromosome: str
+    #: Start position (1-based).
+    start: int
+    #: End position (1-based).
+    end: int
+    #: UCSC bin.
+    bin: int
+    #: Reference style (VCF file).
+    reference: str
+    #: Alternative allele (VCF style).
+    alternative: str
+    #: Either "snv" or "indel".
+    variation_type: str
+    #: VCV ClinVar accession.
+    clinvar_accession: str
 
 
 @attr.s(frozen=True, auto_attribs=True)

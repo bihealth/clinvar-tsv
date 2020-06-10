@@ -73,19 +73,40 @@ rule normalize_clinvar:
 rule sort_tabix_clinvar:
     input: "normalized/clinvar_table_normalized.{genome_build}.tsv.gz",
     output:
-        tsv="output/clinvar.{genome_build}.tsv.gz",
-        tbi="output/clinvar.{genome_build}.tsv.gz.tbi",
-        tsv_md5="output/clinvar.{genome_build}.tsv.gz.md5",
-        tbi_md5="output/clinvar.{genome_build}.tsv.gz.tbi.md5",
+        tsv="unmerged/clinvar.{genome_build}.tsv.gz",
+        tbi="unmerged/clinvar.{genome_build}.tsv.gz.tbi",
+        tsv_md5="unmerged/clinvar.{genome_build}.tsv.gz.md5",
+        tbi_md5="unmerged/clinvar.{genome_build}.tsv.gz.tbi.md5",
     shell:
         r"""
         cat \
             <(zcat {input} | head -1) \
             <(zcat {input} | tail -n +2 | awk -F $'\t' 'BEGIN {{ OFS=FS }} ($2 !~ /[XYM]/)' | sort -k2,2n -k3,3n -k4,4 -k5,5) \
-            <(zcat {input} | tail -n +2 | awk -F $'\t' 'BEGIN {{ OFS=FS }} ($2  ~ /[XYM]/)' | sort -k2,2  -k3,3n -k4,4 -k5,5) \
         | bgzip -c \
         > {output.tsv}
-        tabix -S 1 -s 2 -b 3 -e 3 -f {output.tsv}
+        tabix -S 1 -s 2 -b 3 -e 4 -f {output.tsv}
+        
+        cd $(dirname {output.tsv})
+        md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
+        md5sum $(basename {output.tbi}) >$(basename {output.tbi}).md5
+        """
+
+rule merge_clinvar:
+    input: "normalized/clinvar_table_normalized.{genome_build}.tsv.gz",
+    output:
+        tsv="unmerged/clinvar.{genome_build}.tsv.gz",
+        tbi="merged/clinvar.{genome_build}.tsv.gz.tbi",
+        tsv_md5="merged/clinvar.{genome_build}.tsv.gz.md5",
+        tbi_md5="merged/clinvar.{genome_build}.tsv.gz.tbi.md5",
+    shell:
+        r"""
+        zcat {input} \
+        | clinvar_tsv merge_tsvs \
+            --input-tsv /dev/stdin \
+            --output-tsv /dev/stdout \
+        | bgzip -c \
+        > {output.tsv}
+        tabix -S 1 -s 2 -b 3 -e 4 -f {output.tsv}
         
         cd $(dirname {output.tsv})
         md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
