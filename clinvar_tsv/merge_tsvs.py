@@ -10,7 +10,7 @@ from dateutil.parser import isoparse
 import attr
 import cattr
 
-from .parse_clinvar_xml import DateTimeEncoder, ClinVarSet, VariationClinVarRecord
+from .parse_clinvar_xml import DateTimeEncoder, ClinVarSet, VariationClinVarRecord, as_pg_list
 
 HEADER_OUT = (
     "release",
@@ -21,6 +21,8 @@ HEADER_OUT = (
     "reference",
     "alternative",
     "variation_type",
+    "symbols",
+    "hgnc_ids",
     "vcv",
     "point_rating",
     "pathogenicity",
@@ -221,7 +223,7 @@ def assertion_provided(elem: ClinVarSet):
 
 
 def three_points(
-    reviewed_assertions: typing.List[ReviewedAssertion]
+    reviewed_assertions: typing.List[ReviewedAssertion],
 ) -> typing.Optional[ReviewedAssertion]:
     """Extract three point ReviewedAssertion of possible."""
     for review_status in (ClinVarReviewStatus.PRACTICE_GUIDELINE, ClinVarReviewStatus.EXPERT_PANEL):
@@ -235,7 +237,7 @@ def three_points(
 
 
 def two_points(
-    reviewed_assertions: typing.List[ReviewedAssertion]
+    reviewed_assertions: typing.List[ReviewedAssertion],
 ) -> typing.Optional[ReviewedAssertion]:
     """Extract two point ReviewedAssertion of possible."""
     if not any(map(ReviewedAssertion.from_multiple, reviewed_assertions)):
@@ -247,7 +249,7 @@ def two_points(
 
 
 def one_point(
-    reviewed_assertions: typing.List[ReviewedAssertion]
+    reviewed_assertions: typing.List[ReviewedAssertion],
 ) -> typing.Optional[ReviewedAssertion]:
     if (
         len(reviewed_assertions) == 1
@@ -274,7 +276,8 @@ def zero_points(chunk) -> typing.Optional[ReviewedAssertion]:
         return combined
 
 
-def merge_and_write(vals, chunk, out_tsv):
+def merge_and_write(valss, chunk, out_tsv):
+    vals = valss[0]
     # Try to assign zero point assertion (all somatic or all germline have
     # no pathogenicity assigned.  If we have 1+ points then try three star
     # assignments with only germline variants and those with an assigned assertion.
@@ -301,6 +304,11 @@ def merge_and_write(vals, chunk, out_tsv):
         summary = one_point(reviewed_assertions)
         if summary:
             points = "1"
+    # Merge symbols & HGNC IDs.
+    symbols, hgnc_ids = [], []
+    for one_vals in valss:
+        symbols += one_vals["symbols"][1:-1].split(",")
+        hgnc_ids += one_vals["hgnc_ids"][1:-1].split(",")
     # Write out record.
     print(
         "\t".join(
@@ -313,6 +321,8 @@ def merge_and_write(vals, chunk, out_tsv):
                 vals["reference"],
                 vals["alternative"],
                 vals["variation_type"],
+                as_pg_list(sorted(set(symbols))),
+                as_pg_list(sorted(set(hgnc_ids))),
                 vals["vcv"],
                 points,
                 summary.assertions_max_label(),
@@ -333,16 +343,19 @@ def merge_tsvs(in_tsv, out_tsv):
 
     prev_vals = None
     chunk = []
+    valss = []
     while True:
         line = in_tsv.readline().strip().replace('"""', '"')
         if not line:
             break
         vals = dict(zip(header_in, line.split("\t")))
         if prev_vals and vals["vcv"] != prev_vals["vcv"]:  # write chunk and start new one
-            merge_and_write(prev_vals, chunk, out_tsv)
+            merge_and_write(valss, chunk, out_tsv)
             chunk = []
+            valss = []
         prev_vals = vals
         obj = json.loads(vals["details"])
         chunk.append(cattr.structure(obj, ClinVarSet))
+        valss.append(vals)
     if prev_vals:  # write final chunk
-        merge_and_write(prev_vals, chunk, out_tsv)
+        merge_and_write(valss, chunk, out_tsv)

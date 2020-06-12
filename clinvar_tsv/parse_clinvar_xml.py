@@ -27,6 +27,12 @@ import binning
 from logzero import logger
 import tqdm
 
+
+def as_pg_list(vals: typing.Iterable[str]) -> str:
+    """Convert to Postgres TSV list of strings."""
+    return "{%s}" % (",".join(map(lambda x: repr(x).replace("'", '"'), vals)))
+
+
 #: Mapping from review status to gold stars.
 GOLD_STAR_MAP = {
     "no assertion provided": 0,
@@ -49,6 +55,8 @@ TSV_HEADER = "\t".join(
         "reference",
         "alternative",
         "variation_type",
+        "symbols",
+        "hgnc_ids",
         "variation_id",
         "rcv",
         "gold_stars",
@@ -223,13 +231,21 @@ class Measure:
     """Represent the relevant informatino from a Measure."""
 
     measure_type: str
+    symbols: typing.Tuple[str]
+    hgnc_ids: typing.Tuple[str]
     sequence_locations: typing.Dict[str, SequenceLocation]
     comments: typing.Tuple[str, ...]
 
     @classmethod
     def from_element(cls, element: ET.Element):
+        symbols = [
+            elem.text for elem in element.findall('.//Symbol/ElementValue[@Type="Preferred"]')
+        ]
+        hgnc_ids = [elem.attrib.get("ID") for elem in element.findall('.//XRef[@DB="HGNC"]')]
         return Measure(
             measure_type=element.attrib.get("Type"),
+            symbols=tuple(sorted(set(symbols))),
+            hgnc_ids=tuple(sorted(set(hgnc_ids))),
             sequence_locations={
                 elem.attrib.get("Assembly"): SequenceLocation.from_element(elem)
                 for elem in element.findall("./SequenceLocation")
@@ -566,6 +582,8 @@ class ClinvarParser:
                                             location.ref,
                                             location.alt,
                                             variation_type,
+                                            as_pg_list(measure.symbols),
+                                            as_pg_list(measure.hgnc_ids),
                                             clinvar_set.ref_cv_assertion.id_no,
                                             clinvar_set.ref_cv_assertion.clinvar_accession,
                                             clinvar_set.ref_cv_assertion.gold_stars,
