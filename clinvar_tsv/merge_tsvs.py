@@ -307,8 +307,10 @@ def merge_and_write(valss, chunk, out_tsv):
     # Merge symbols & HGNC IDs.
     symbols, hgnc_ids = [], []
     for one_vals in valss:
-        symbols += one_vals["symbols"][1:-1].split(",")
-        hgnc_ids += one_vals["hgnc_ids"][1:-1].split(",")
+        if one_vals["symbols"] != "{}":
+            symbols += list(map(json.loads, one_vals["symbols"][1:-1].split(",")))
+        if one_vals["hgnc_ids"] != "{}":
+            hgnc_ids += list(map(json.loads, one_vals["hgnc_ids"][1:-1].split(",")))
     # Write out record.
     print(
         "\t".join(

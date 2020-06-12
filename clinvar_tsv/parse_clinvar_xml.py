@@ -30,7 +30,7 @@ import tqdm
 
 def as_pg_list(vals: typing.Iterable[str]) -> str:
     """Convert to Postgres TSV list of strings."""
-    return "{%s}" % (",".join(map(lambda x: repr(x).replace("'", '"'), vals)))
+    return "{%s}" % (",".join(map(json.dumps, vals)))
 
 
 #: Mapping from review status to gold stars.
