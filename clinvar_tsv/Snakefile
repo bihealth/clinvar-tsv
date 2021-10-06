@@ -86,7 +86,7 @@ rule sort_tabix_clinvar:
         set -euo pipefail
 
         cat \
-            <(zcat {input} | head -1) \
+            <(zcat {input} | head -n 1) \
             <(zcat {input} | tail -n +2 | sort -k2,2n -k3,3n -k4,4 -k5,5) \
         | bgzip -c \
         > {output.tsv}
