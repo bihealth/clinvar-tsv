@@ -64,6 +64,7 @@ _ASSERTION_LABELS = {
         "association",
         "conflicting interpretations of pathogenicity",
         "risk factor",
+        "confers sensitivity",
     ),
     2: ("pathogenic",),
 }
