@@ -3,6 +3,12 @@ Clinvar-TSV Changelog
 =====================
 
 ------
+v0.2.2
+------
+
+- Fixing bug with quotes.
+
+------
 v0.2.1
 ------
 
