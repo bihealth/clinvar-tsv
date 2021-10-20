@@ -331,9 +331,9 @@ def merge_and_write(valss, chunk, out_tsv):
                 summary.assertions_max_label(),
                 summary.review_status_label(),
                 summary.assertions_summary_label(),
-                json.dumps(
-                    [cattr.unstructure(entry) for entry in chunk], cls=DateTimeEncoder
-                ).replace('"', '"""'),
+                json.dumps([cattr.unstructure(entry) for entry in chunk], cls=DateTimeEncoder)
+                .replace(r"\"", "'")
+                .replace('"', '"""'),
             ]
         ),
         file=out_tsv,

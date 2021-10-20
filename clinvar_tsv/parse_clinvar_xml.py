@@ -593,7 +593,9 @@ class ClinvarParser:
                                             measure_set.accession,
                                             json.dumps(
                                                 cattr.unstructure(clinvar_set), cls=DateTimeEncoder
-                                            ).replace('"', '"""'),
+                                            )
+                                            .replace(r"\"", "'")
+                                            .replace('"', '"""'),
                                         ]
                                         print("\t".join(map(str, row)), file=out_files[build])
                         progress.update()
