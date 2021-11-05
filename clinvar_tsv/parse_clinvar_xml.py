@@ -481,10 +481,11 @@ class ClinVarSet:
 
     @staticmethod
     def from_element(element: ET.Element) -> TClinVarSet:
+        et_title = element.find("Title")
         return ClinVarSet(
             id_no=int(element.attrib.get("ID")),
             record_status=element.find("RecordStatus").text,
-            title=element.find("Title").text,
+            title=et_title.text if et_title else "[NO TITLE]",
             ref_cv_assertion=ReferenceClinVarAssertion.from_element(
                 element.find("ReferenceClinVarAssertion")
             ),
