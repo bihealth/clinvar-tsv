@@ -3,6 +3,13 @@ Clinvar-TSV Changelog
 =====================
 
 ------
+v0.3.0
+------
+
+- Various refinements of the code.
+- Adding tests and CI.
+
+------
 v0.2.2
 ------
 
