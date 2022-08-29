@@ -9,8 +9,9 @@ import sys
 
 import snakemake
 
-from . import parse_clinvar_xml, normalize, merge_tsvs
 from clinvar_tsv import __version__
+
+from . import merge_tsvs, normalize, parse_clinvar_xml
 
 
 def run_inspect(args):

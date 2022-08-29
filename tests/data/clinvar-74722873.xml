@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReleaseSet Dated="2021-10-02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="full" xsi:noNamespaceSchemaLocation="http://ftp.ncbi.nlm.nih.gov/pub/clinvar/xsd_public/clinvar_public_1.64.xsd">
+
+
+<ClinVarSet ID="74722873">
+  <RecordStatus>current</RecordStatus>
+  <Title>NM_003829.4(MPDZ):c.3582T&gt;G (p.Ser1194Arg) AND not provided</Title>
+  <ReferenceClinVarAssertion DateCreated="2017-03-07" DateLastUpdated="2021-09-29" ID="1015284">
+    <ClinVarAccession Acc="RCV000430591" Version="5" Type="RCV" DateUpdated="2021-09-29"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2020-11-18">
+      <ReviewStatus>criteria provided, conflicting interpretations</ReviewStatus>
+      <Description>Conflicting interpretations of pathogenicity</Description>
+      <Explanation DataSource="ClinVar" Type="public">Benign(1);Uncertain significance(1)</Explanation>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <NamePlatform>Illumina</NamePlatform>
+        <ResultType>variant call</ResultType>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData ID="74441227">
+        <Attribute Type="AlleleFrequency">0.005795</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData ID="74441228">
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="376860" Acc="VCV000376860" Version="5">
+      <Measure Type="single nucleotide variant" ID="363738">
+        <Name>
+          <ElementValue Type="Preferred">NM_003829.4(MPDZ):c.3582T&gt;G (p.Ser1194Arg)</ElementValue>
+        </Name>
+        <CanonicalSPDI>NC_000009.12:13150558:A:C</CanonicalSPDI>
+        <AttributeSet>
+          <Attribute Accession="NM_001261406" Version="1" Change="c.3582T&gt;G" Type="HGVS, coding, RefSeq">NM_001261406.1:c.3582T&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NM_001261407" Version="1" Change="c.3582T&gt;G" Type="HGVS, coding, RefSeq">NM_001261407.1:c.3582T&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NM_001330637" Version="1" Change="c.3582T&gt;G" Type="HGVS, coding, RefSeq">NM_001330637.1:c.3582T&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NM_003829" Version="4" Change="c.3582T&gt;G" Type="HGVS, coding, RefSeq">NM_003829.4:c.3582T&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NG_042810" Version="1" Change="g.134006T&gt;G" Type="HGVS, genomic, RefSeqGene">NG_042810.1:g.134006T&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000009" Version="12" Change="g.13150559A&gt;C" Type="HGVS, genomic, top level" integerValue="38">NC_000009.12:g.13150559A&gt;C</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000009" Version="11" Change="g.13150558A&gt;C" Type="HGVS, genomic, top level, previous" integerValue="37">NC_000009.11:g.13150558A&gt;C</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_001248335" Version="1" Change="p.Ser1194Arg" Type="HGVS, protein, RefSeq">NP_001248335.1:p.Ser1194Arg</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_001248336" Version="1" Change="p.Ser1194Arg" Type="HGVS, protein, RefSeq">NP_001248336.1:p.Ser1194Arg</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_001317566" Version="1" Change="p.Ser1194Arg" Type="HGVS, protein, RefSeq">NP_001317566.1:p.Ser1194Arg</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_003820" Version="2" Change="p.Ser1194Arg" Type="HGVS, protein, RefSeq">NP_003820.2:p.Ser1194Arg</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_001261406.1:c.3582T&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_001261407.1:c.3582T&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_001330637.1:c.3582T&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_003829.4:c.3582T&gt;G" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange1LetterCode">S1194R</Attribute>
+        </AttributeSet>
+        <AlleleFrequencyList>
+          <AlleleFrequency Value="0.00660" Source="NHLBI Exome Sequencing Project (ESP) Exome Variant Server"/>
+          <AlleleFrequency Value="0.00140" Source="1000 Genomes Project"/>
+          <AlleleFrequency Value="0.00526" Source="Exome Aggregation Consortium (ExAC)"/>
+          <AlleleFrequency Value="0.00558" Source="The Genome Aggregation Database (gnomAD)"/>
+          <AlleleFrequency Value="0.00459" Source="The Genome Aggregation Database (gnomAD), exomes"/>
+          <AlleleFrequency Value="0.00497" Source="Trans-Omics for Precision Medicine (TOPMed)"/>
+        </AlleleFrequencyList>
+        <GlobalMinorAlleleFrequency Value="0.00140" Source="1000 Genomes Project" MinorAllele="C"/>
+        <CytogeneticLocation>9p23</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="9" Accession="NC_000009.12" start="13150559" stop="13150559" display_start="13150559" display_stop="13150559" variantLength="1" positionVCF="13150559" referenceAlleleVCF="A" alternateAlleleVCF="C"/>
+        <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="9" Accession="NC_000009.11" start="13150558" stop="13150558" display_start="13150558" display_stop="13150558" variantLength="1" Strand="+" positionVCF="13150558" referenceAlleleVCF="A" alternateAlleleVCF="C"/>
+        <MeasureRelationship Type="within single gene">
+          <Name>
+            <ElementValue Type="Preferred">multiple PDZ domain crumbs cell polarity complex component</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">MPDZ</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="9" Accession="NC_000009.12" start="13105296" stop="13279692" display_start="13105296" display_stop="13279692" Strand="-"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="9" Accession="NC_000009.11" start="13105702" stop="13279562" display_start="13105702" display_stop="13279562" variantLength="173861" Strand="-"/>
+          <XRef ID="8777" DB="Gene"/>
+          <XRef Type="MIM" ID="603785" DB="OMIM"/>
+          <XRef ID="HGNC:7208" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef Type="rs" ID="188840960" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">NM_003829.4(MPDZ):c.3582T&gt;G (p.Ser1194Arg)</ElementValue>
+      </Name>
+      <XRef ID="CA4987074" DB="ClinGen"/>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="9460">
+      <Trait ID="17556" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">not provided</ElementValue>
+          <XRef ID="13DG0619" DB="Developmental Genetics Unit,King Faisal Specialist Hospital &amp; Research Centre"/>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="public definition">The term 'not provided' is registered in MedGen to support identification of submissions to ClinVar for which no condition was named when assessing the variant. 'not provided' differs from 'not specified', which is used when a variant is asserted to be benign, likely benign, or of uncertain significance for conditions that have not been specified.</Attribute>
+        </AttributeSet>
+        <XRef ID="CN517202" DB="MedGen"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="976055">
+    <ClinVarSubmissionID localKey="14766502" submitter="Center for Pediatric Genomic Medicine,Children's Mercy Hospital and Clinics" submitterDate="2017-02-17"/>
+    <ClinVarAccession Acc="SCV000510765" Version="1" Type="SCV" OrgID="505698" OrganizationCategory="clinic" OrgType="primary" DateUpdated="2021-09-29"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2017-01-31">
+      <ReviewStatus>criteria provided, single submitter</ReviewStatus>
+      <Description>Uncertain Significance</Description>
+      <Comment>Converted during submission to Uncertain significance.</Comment>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <AttributeSet>
+      <Attribute Type="AssertionMethod">ACMG Guidelines, 2015</Attribute>
+      <Citation>
+        <ID Source="PubMed">25741868</ID>
+      </Citation>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species>Homo sapiens</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <NamePlatform>Illumina</NamePlatform>
+        <TypePlatform>Sequencing</TypePlatform>
+        <ResultType>variant call</ResultType>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="AlleleFrequency">0.005795</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="single nucleotide variant">
+        <SequenceLocation Assembly="GRCh37" Chr="9" Strand="+" alternateAllele="C" referenceAllele="A" start="13150558" stop="13150558"/>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">not provided</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+  <ClinVarAssertion ID="2065459" SubmissionName="SUB8755776">
+    <ClinVarSubmissionID localKey="1774296|MedGen:CN517202" submittedAssembly="GRCh37" submitter="Invitae" submitterDate="2021-01-07"/>
+    <ClinVarAccession Acc="SCV001097664" Version="3" Type="SCV" OrgID="500031" OrganizationCategory="laboratory" OrgType="primary" DateUpdated="2021-06-15"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2020-11-18">
+      <ReviewStatus>criteria provided, single submitter</ReviewStatus>
+      <Description>Benign</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="Invitae" ID="1774296"/>
+    <AttributeSet>
+      <Attribute Type="AssertionMethod">Invitae Variant Classification Sherloc (09022015)</Attribute>
+      <Citation>
+        <ID Source="PubMed">28492532</ID>
+      </Citation>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <AttributeSet>
+          <Attribute Type="HGVS">NC_000009.11:g.13150558A&gt;C</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">MPDZ</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <XRef DB="MedGen" ID="CN517202" Type="CUI"/>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+
+</ReleaseSet>

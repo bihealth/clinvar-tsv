@@ -1,7 +1,7 @@
 # Requirements for developing clinvar-tsv
 
 # Base Requirements
--r base.txt
+-r test.txt
 
 # Prettier CLI for py.test
 pytest-sugar==0.8.0

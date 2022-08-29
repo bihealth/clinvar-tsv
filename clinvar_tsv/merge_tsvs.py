@@ -5,12 +5,12 @@ import enum
 import json
 import re
 import typing
-from dateutil.parser import isoparse
 
 import attr
 import cattr
+from dateutil.parser import isoparse
 
-from .parse_clinvar_xml import DateTimeEncoder, ClinVarSet, VariationClinVarRecord, as_pg_list
+from .parse_clinvar_xml import ClinVarSet, DateTimeEncoder, VariationClinVarRecord, as_pg_list
 
 HEADER_OUT = (
     "release",

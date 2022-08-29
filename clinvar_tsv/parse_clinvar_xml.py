@@ -14,16 +14,16 @@ Reference on clinvar XML tag:
 #  - add star fields
 
 import datetime
-import json
-import typing
-import re
-import xml.etree.ElementTree as ET
-from dateutil.parser import isoparse
 from itertools import chain
+import json
+import re
+import typing
+import xml.etree.ElementTree as ET
 
 import attr
-import cattr
 import binning
+import cattr
+from dateutil.parser import isoparse
 from logzero import logger
 import tqdm
 
@@ -121,9 +121,9 @@ class ObservedDataDescription:
     #: Optional description text.
     description: typing.Optional[str]
     #: PubMed IDs.
-    pubmed_ids: typing.Tuple[int]
+    pubmed_ids: typing.Tuple[int, ...]
     #: OMIM IDs.
-    omim_ids: typing.Tuple[int]
+    omim_ids: typing.Tuple[int, ...]
 
     @staticmethod
     def from_element(element: ET.Element):
@@ -231,8 +231,8 @@ class Measure:
     """Represent the relevant informatino from a Measure."""
 
     measure_type: str
-    symbols: typing.Tuple[str]
-    hgnc_ids: typing.Tuple[str]
+    symbols: typing.Tuple[str, ...]
+    hgnc_ids: typing.Tuple[str, ...]
     sequence_locations: typing.Dict[str, SequenceLocation]
     comments: typing.Tuple[str, ...]
 
