@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReleaseSet Dated="2021-10-02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="full" xsi:noNamespaceSchemaLocation="http://ftp.ncbi.nlm.nih.gov/pub/clinvar/xsd_public/clinvar_public_1.64.xsd">
+<!-- pathogenic entry below-->
+<ClinVarSet ID="71159226">
+  <RecordStatus>current</RecordStatus>
+  <Title>NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp) AND Spherocytosis, type 3, autosomal recessive</Title>
+  <ReferenceClinVarAssertion DateCreated="2012-08-13" DateLastUpdated="2021-07-07" ID="71202">
+    <ClinVarAccession Acc="RCV000013699" Version="24" Type="RCV" DateUpdated="2021-07-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="1993-09-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData ID="71503612">
+        <Attribute Type="Description">In the kindred with autosomal recessive spherocytosis (SPH3; 270970) reported by Agre et al. (1986), Marchesi et al. (1989, 1989) identified a CGT-to-GAT change resulting in an ala970-to-asp (A970N) substitution in the alpha-II domain.</Attribute>
+        <Citation Type="general">
+          <ID Source="PubMed">3785322</ID>
+        </Citation>
+        <Citation Type="general">
+          <CitationText>Marchesi, S. L., Agre, P. A., Speicher, D. W., Tse, W. T., Forget, B. G. Mutant spectrin alpha-II domain in recessively inherited spherocytosis. Blood Suppl. 1: 682-only, 1989.</CitationText>
+        </Citation>
+        <Citation Type="general">
+          <CitationText>Marchesi, S. L., Agre, P. A., Speicher, D. W., Tse, W. T., Forget, B. G. Mutant spectrin alpha-II domain in recessively inherited spherocytosis. (Abstract) Blood 74: 182A, 1989.</CitationText>
+        </Citation>
+      </ObservedData>
+      <ObservedData ID="71503612">
+        <Attribute Type="Description">Boivin et al. (1993) searched for this mutation in patients with dominant or with what the authors termed 'non-dominant' spherocytosis, including 78 patients, 55 relatives, and 46 controls. They found that the mutation and the HS disease gene were located on different chromosomes and inherited independently of each other.</Attribute>
+        <Citation Type="general">
+          <ID Source="PubMed">8370581</ID>
+        </Citation>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="12846" Acc="VCV000012846" Version="5">
+      <Measure Type="single nucleotide variant" ID="27885">
+        <Name>
+          <ElementValue Type="Preferred">NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp)</ElementValue>
+        </Name>
+        <CanonicalSPDI>NC_000001.11:158654737:G:T</CanonicalSPDI>
+        <AttributeSet>
+          <Attribute Accession="NM_003126" Version="4" Change="c.2909C&gt;A" Type="HGVS, coding, RefSeq" MANESelect="true">NM_003126.4:c.2909C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="LRG_1131" Type="HGVS, genomic, LRG">LRG_1131:g.36979C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NG_011474" Version="1" Change="g.36979C&gt;A" Type="HGVS, genomic, RefSeqGene">NG_011474.1:g.36979C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000001" Version="11" Change="g.158654738G&gt;T" Type="HGVS, genomic, top level" integerValue="38">NC_000001.11:g.158654738G&gt;T</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000001" Version="10" Change="g.158624528G&gt;T" Type="HGVS, genomic, top level, previous" integerValue="37">NC_000001.10:g.158624528G&gt;T</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NM_003126" Version="2" Change="c.2909C&gt;A" Type="HGVS, previous">NM_003126.2:c.2909C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, protein"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="P02549" Change="p.Ala970Asp" Type="HGVS, protein">P02549:p.Ala970Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_003117" Version="2" Change="p.Ala970Asp" Type="HGVS, protein, RefSeq">NP_003117.2:p.Ala970Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="Location">NM_003126.2:exon 21</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_003126.4:c.2909C&gt;A" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange1LetterCode">A970D</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange3LetterCode">ALA970ASP</Attribute>
+        </AttributeSet>
+        <AlleleFrequencyList>
+          <AlleleFrequency Value="0.01418" Source="1000 Genomes Project"/>
+          <AlleleFrequency Value="0.03273" Source="Exome Aggregation Consortium (ExAC)"/>
+          <AlleleFrequency Value="0.03222" Source="The Genome Aggregation Database (gnomAD)"/>
+          <AlleleFrequency Value="0.03302" Source="The Genome Aggregation Database (gnomAD), exomes"/>
+          <AlleleFrequency Value="0.03225" Source="Trans-Omics for Precision Medicine (TOPMed)"/>
+        </AlleleFrequencyList>
+        <GlobalMinorAlleleFrequency Value="0.01418" Source="1000 Genomes Project" MinorAllele="T"/>
+        <CytogeneticLocation>1q23.1</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="1" Accession="NC_000001.11" start="158654738" stop="158654738" display_start="158654738" display_stop="158654738" variantLength="1" positionVCF="158654738" referenceAlleleVCF="G" alternateAlleleVCF="T"/>
+        <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="1" Accession="NC_000001.10" start="158624528" stop="158624528" display_start="158624528" display_stop="158624528" variantLength="1" positionVCF="158624528" referenceAlleleVCF="G" alternateAlleleVCF="T"/>
+        <MeasureRelationship Type="within single gene">
+          <Name>
+            <ElementValue Type="Preferred">spectrin alpha, erythrocytic 1</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">SPTA1</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="1" Accession="NC_000001.11" start="158610498" stop="158686715" display_start="158610498" display_stop="158686715" Strand="-"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="1" Accession="NC_000001.10" start="158580495" stop="158656505" display_start="158580495" display_stop="158656505" variantLength="76011" Strand="-"/>
+          <XRef ID="6708" DB="Gene"/>
+          <XRef Type="MIM" ID="182860" DB="OMIM"/>
+          <XRef ID="HGNC:11272" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef ID="24520" DB="ARUP Laboratories, Molecular Genetics and Genomics,ARUP Laboratories"/>
+        <XRef ID="2627" DB="Illumina Clinical Services Laboratory,Illumina"/>
+        <XRef ID="P02549#VAR_001349" DB="UniProtKB"/>
+        <XRef Type="Allelic variant" ID="182860.0009" DB="OMIM"/>
+        <XRef Type="rs" ID="35948326" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp)</ElementValue>
+      </Name>
+      <XRef ID="CA122749" DB="ClinGen"/>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="3501">
+      <Trait ID="11080" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Spherocytosis, type 3, autosomal recessive</ElementValue>
+        </Name>
+        <XRef ID="C4016379" DB="MedGen"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="33946">
+    <ClinVarSubmissionID localKey="182860.0009_SPHEROCYTOSIS, TYPE 3, AUTOSOMAL RECESSIVE" submitter="OMIM" submitterDate="2015-11-18" title="SPTA1, ALA970ASP_SPHEROCYTOSIS, TYPE 3, AUTOSOMAL RECESSIVE"/>
+    <ClinVarAccession Acc="SCV000033946" Version="2" Type="SCV" OrgID="3" OrganizationCategory="resource" OrgType="primary" DateUpdated="2020-04-18"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="1993-09-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="OMIM" ID="182860.0009" Type="Allelic variant"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">In the kindred with autosomal recessive spherocytosis (SPH3; 270970) reported by Agre et al. (1986), Marchesi et al. (1989, 1989) identified a CGT-to-GAT change resulting in an ala970-to-asp (A970N) substitution in the alpha-II domain.</Attribute>
+        <Citation>
+          <ID Source="PubMed">3785322</ID>
+        </Citation>
+        <Citation>
+          <CitationText>Marchesi, S. L., Agre, P. A., Speicher, D. W., Tse, W. T., Forget, B. G. Mutant spectrin alpha-II domain in recessively inherited spherocytosis. Blood Suppl. 1: 682-only, 1989.</CitationText>
+        </Citation>
+        <Citation>
+          <CitationText>Marchesi, S. L., Agre, P. A., Speicher, D. W., Tse, W. T., Forget, B. G. Mutant spectrin alpha-II domain in recessively inherited spherocytosis. (Abstract) Blood 74: 182A, 1989.</CitationText>
+        </Citation>
+        <XRef DB="OMIM" ID="270970" Type="MIM"/>
+      </ObservedData>
+      <ObservedData>
+        <Attribute Type="Description">Boivin et al. (1993) searched for this mutation in patients with dominant or with what the authors termed 'non-dominant' spherocytosis, including 78 patients, 55 relatives, and 46 controls. They found that the mutation and the HS disease gene were located on different chromosomes and inherited independently of each other.</Attribute>
+        <Citation>
+          <ID Source="PubMed">8370581</ID>
+        </Citation>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <Name>
+          <ElementValue Type="Preferred">SPTA1, ALA970ASP</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="NonHGVS">ALA970ASP</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">SPTA1</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+        <XRef DB="OMIM" ID="182860.0009" Type="Allelic variant"/>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">SPHEROCYTOSIS, TYPE 3, AUTOSOMAL RECESSIVE</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+<!-- benign, overriding entry below-->
+<ClinVarSet ID="71236629">
+  <RecordStatus>current</RecordStatus>
+  <Title>NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp) AND not specified</Title>
+  <ReferenceClinVarAssertion DateCreated="2016-10-02" DateLastUpdated="2021-07-07" ID="612521">
+    <ClinVarAccession Acc="RCV000251633" Version="4" Type="RCV" DateUpdated="2021-07-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2016-03-28">
+      <ReviewStatus>criteria provided, multiple submitters, no conflicts</ReviewStatus>
+      <Description>Benign/Likely benign</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <Method>
+        <Description>Genome/Exome Filtration</Description>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData ID="71573478">
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+      <ObservedData ID="71573478">
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="12846" Acc="VCV000012846" Version="5">
+      <Measure Type="single nucleotide variant" ID="27885">
+        <Name>
+          <ElementValue Type="Preferred">NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp)</ElementValue>
+        </Name>
+        <CanonicalSPDI>NC_000001.11:158654737:G:T</CanonicalSPDI>
+        <AttributeSet>
+          <Attribute Accession="NM_003126" Version="4" Change="c.2909C&gt;A" Type="HGVS, coding, RefSeq" MANESelect="true">NM_003126.4:c.2909C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="LRG_1131" Type="HGVS, genomic, LRG">LRG_1131:g.36979C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NG_011474" Version="1" Change="g.36979C&gt;A" Type="HGVS, genomic, RefSeqGene">NG_011474.1:g.36979C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000001" Version="11" Change="g.158654738G&gt;T" Type="HGVS, genomic, top level" integerValue="38">NC_000001.11:g.158654738G&gt;T</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NC_000001" Version="10" Change="g.158624528G&gt;T" Type="HGVS, genomic, top level, previous" integerValue="37">NC_000001.10:g.158624528G&gt;T</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NM_003126" Version="2" Change="c.2909C&gt;A" Type="HGVS, previous">NM_003126.2:c.2909C&gt;A</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, protein"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="P02549" Change="p.Ala970Asp" Type="HGVS, protein">P02549:p.Ala970Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Accession="NP_003117" Version="2" Change="p.Ala970Asp" Type="HGVS, protein, RefSeq">NP_003117.2:p.Ala970Asp</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="Location">NM_003126.2:exon 21</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">missense variant</Attribute>
+          <XRef ID="SO:0001583" DB="Sequence Ontology"/>
+          <XRef ID="NM_003126.4:c.2909C&gt;A" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange1LetterCode">A970D</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="ProteinChange3LetterCode">ALA970ASP</Attribute>
+        </AttributeSet>
+        <AlleleFrequencyList>
+          <AlleleFrequency Value="0.01418" Source="1000 Genomes Project"/>
+          <AlleleFrequency Value="0.03273" Source="Exome Aggregation Consortium (ExAC)"/>
+          <AlleleFrequency Value="0.03222" Source="The Genome Aggregation Database (gnomAD)"/>
+          <AlleleFrequency Value="0.03302" Source="The Genome Aggregation Database (gnomAD), exomes"/>
+          <AlleleFrequency Value="0.03225" Source="Trans-Omics for Precision Medicine (TOPMed)"/>
+        </AlleleFrequencyList>
+        <GlobalMinorAlleleFrequency Value="0.01418" Source="1000 Genomes Project" MinorAllele="T"/>
+        <CytogeneticLocation>1q23.1</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="1" Accession="NC_000001.11" start="158654738" stop="158654738" display_start="158654738" display_stop="158654738" variantLength="1" positionVCF="158654738" referenceAlleleVCF="G" alternateAlleleVCF="T"/>
+        <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="1" Accession="NC_000001.10" start="158624528" stop="158624528" display_start="158624528" display_stop="158624528" variantLength="1" positionVCF="158624528" referenceAlleleVCF="G" alternateAlleleVCF="T"/>
+        <MeasureRelationship Type="within single gene">
+          <Name>
+            <ElementValue Type="Preferred">spectrin alpha, erythrocytic 1</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">SPTA1</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="1" Accession="NC_000001.11" start="158610498" stop="158686715" display_start="158610498" display_stop="158686715" Strand="-"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="1" Accession="NC_000001.10" start="158580495" stop="158656505" display_start="158580495" display_stop="158656505" variantLength="76011" Strand="-"/>
+          <XRef ID="6708" DB="Gene"/>
+          <XRef Type="MIM" ID="182860" DB="OMIM"/>
+          <XRef ID="HGNC:11272" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef ID="24520" DB="ARUP Laboratories, Molecular Genetics and Genomics,ARUP Laboratories"/>
+        <XRef ID="2627" DB="Illumina Clinical Services Laboratory,Illumina"/>
+        <XRef ID="P02549#VAR_001349" DB="UniProtKB"/>
+        <XRef Type="Allelic variant" ID="182860.0009" DB="OMIM"/>
+        <XRef Type="rs" ID="35948326" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">NM_003126.4(SPTA1):c.2909C&gt;A (p.Ala970Asp)</ElementValue>
+      </Name>
+      <XRef ID="CA122749" DB="ClinGen"/>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="9590">
+      <Trait ID="16789" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">not specified</ElementValue>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">AllHighlyPenetrant</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="public definition">The term 'not specified' was created for use in ClinVar so that submitters can convey the concept that a variant is benign, likely benign, or of uncertain significance for an unspecified set of disorders.  This usage was introduced in 2014 to replace AllHighlyPenetrant.</Attribute>
+        </AttributeSet>
+        <XRef ID="CN169374" DB="MedGen"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="591090">
+    <ClinVarSubmissionID localKey="NM_003126.2:c.2909C&gt;A|NOT SPECIFIED" submittedAssembly="GRCh37" submitter="PreventionGenetics,PreventionGenetics" submitterDate="2016-04-28"/>
+    <ClinVarAccession Acc="SCV000309408" Version="1" Type="SCV" OrgID="239772" OrganizationCategory="laboratory" OrgType="primary" DateUpdated="2021-06-23"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance>
+      <ReviewStatus>criteria provided, single submitter</ReviewStatus>
+      <Description>Likely benign</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <AttributeSet>
+      <Attribute Type="AssertionMethod">ACMG Guidelines, 2015</Attribute>
+      <Citation>
+        <ID Source="PubMed">25741868</ID>
+      </Citation>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <AttributeSet>
+          <Attribute Type="HGVS">NM_003126.2:c.2909C&gt;A</Attribute>
+        </AttributeSet>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">NOT SPECIFIED</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+  <ClinVarAssertion ID="1051515" SubmissionName="GenomeExome_3.17.2017">
+    <ClinVarSubmissionID localKey="67627186|not specified" submittedAssembly="GRCh37" submitter="Laboratory for Molecular Medicine, Partners HealthCare Personalized Medicine" submitterDate="2017-04-03"/>
+    <ClinVarAccession Acc="SCV000540452" Version="1" Type="SCV" OrgID="21766" OrganizationCategory="laboratory" OrgType="primary" DateUpdated="2021-07-07"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2016-03-28">
+      <ReviewStatus>criteria provided, single submitter</ReviewStatus>
+      <Description>Benign</Description>
+      <Comment>Variant identified in a genome or exome case(s) and assessed due to predicted null impact of the variant or pathogenic assertions in the literature or databases. Disclaimer: This variant has not undergone full assessment. The following are preliminary notes: frequency</Comment>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="Laboratory for Molecular Medicine" ID="67627186"/>
+    <AttributeSet>
+      <Attribute Type="AssertionMethod">LMM Criteria</Attribute>
+      <Citation>
+        <ID Source="PubMed">24033266</ID>
+      </Citation>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Description>Genome/Exome Filtration</Description>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <Name>
+          <ElementValue Type="Alternate">NM_003126.2:c.2909C&gt;A</ElementValue>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">p.Ala970Asp</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="Location">NM_003126.2:EXON 21</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS">NC_000001.10:g.158624528G&gt;T</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">SPTA1</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">not specified</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+</ReleaseSet>

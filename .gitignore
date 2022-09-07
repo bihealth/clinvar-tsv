@@ -1,6 +1,8 @@
 /downloads
 /normalized
 /parsed
+/output
+/unmerged
 /.snakemake
 
 work/

@@ -10,6 +10,12 @@ pytest-flake8
 coverage
 pytest-cov
 isort  ==5.10.1
+mypy ==0.971
 
 # Black source code formatter and style checker
 black ==22.8.0
+
+factory_boy ==3.2.1
+pytest-factoryboy ==2.5.0
+
+coveralls
