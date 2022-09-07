@@ -27,11 +27,28 @@ jobs:
           pip freeze
       - name: install package
         run: pip install -e .
-      - name: run test
-        run: make test
+      - name: run tests
+        run: |
+          make test
+          coverage xml
+          coverage report
+      - name: Coveralls
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel: true
+          flag-name: Unit Test
       - name: lint with flake8
         run: flake8
       - name: check formatting
         run: black -l 100 --check .
       - name: check import order
-        run: isort --force-sort-within-sections -profile --check .
+        run: isort --force-sort-within-sections --profile=black --line-length 100 --check .
+
+  coveralls_finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel-finished: true

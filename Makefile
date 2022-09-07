@@ -3,7 +3,7 @@ default:
 
 .PHONY: black
 black:
-	black -l 100 clinvar_tsv
+	black -l 100 .
 
 .PHONY: test
 test:
@@ -11,7 +11,7 @@ test:
 
 .PHONY: isort
 isort:
-	isort --force-sort-within-sections -profile .
+	isort --force-sort-within-sections --profile black --line-length 100 .
 
 .PHONY: flake8
 flake8:

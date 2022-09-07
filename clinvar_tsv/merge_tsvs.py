@@ -1,16 +1,14 @@
 """Merging of normalized ClinVar TSV files."""
 
-import datetime
-import enum
+import itertools
 import json
 import re
 import typing
 
 import attr
 import cattr
-from dateutil.parser import isoparse
 
-from .parse_clinvar_xml import ClinVarSet, DateTimeEncoder, as_pg_list
+from clinvar_tsv.common import ClinVarSet, DateTimeEncoder, Pathogenicity, ReviewStatus, as_pg_list
 
 HEADER_OUT = (
     "release",
@@ -20,292 +18,203 @@ HEADER_OUT = (
     "bin",
     "reference",
     "alternative",
+    "clinvar_version",
     "variation_type",
     "symbols",
     "hgnc_ids",
     "vcv",
-    "point_rating",
-    "pathogenicity",
-    "review_status",
-    "pathogenicity_summary",
+    "summary_clinvar_review_status_label",
+    "summary_clinvar_pathogenicity_label",
+    "summary_clinvar_pathogenicity",
+    "summary_clinvar_gold_stars",
+    "summary_paranoid_review_status_label",
+    "summary_paranoid_pathogenicity_label",
+    "summary_paranoid_pathogenicity",
+    "summary_paranoid_gold_stars",
     "details",
 )
 
 
-cattr.register_structure_hook(
-    datetime.datetime, lambda dt_str, _: isoparse(dt_str) if dt_str else None
-)
-cattr.register_structure_hook(
-    datetime.date, lambda dt_str, _: isoparse(dt_str).date() if dt_str else None
-)
-cattr.register_structure_hook(
-    datetime.time, lambda dt_str, _: isoparse(dt_str).time() if dt_str else None
-)
-
-_ASSERTION_LABELS = {
-    -2: ("benign",),
-    -1: (
-        "likely benign",
-        # below: other
-        "protective",
-    ),
-    0: (
-        "uncertain significance",
-        # below: other
-        "association not found",
-        "drug response",
-        "not provided",
-        "other",
-    ),
-    1: (
-        "likely pathogenic",
-        # below: other
-        "affects",
-        "association",
-        "conflicting interpretations of pathogenicity",
-        "risk factor",
-        "confers sensitivity",
-    ),
-    2: ("pathogenic",),
-}
-
-
-class ClinVarAssertion(enum.Enum):
-    BENIGN = -2
-    LIKELY_BENIGN = -1
-    UNCERTAIN = 0
-    LIKELY_PATHOGENIC = 1
-    PATHOGENIC = 2
-
-    def __lt__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value < other.value
-        return NotImplemented
-
-    @classmethod
-    def from_label(cls, label):
-        for val in cls:
-            if label in _ASSERTION_LABELS[val.value]:
-                return val
-        raise ValueError("Invalid label: %s" % label)
-
-    def label(self):
-        return _ASSERTION_LABELS[self.value][0]
-
-
-def most_extreme(assertions: typing.Iterable[ClinVarAssertion]):
-    if min(assertions).value < 0 and max(assertions).value > 0:
-        return max(assertions)
-    elif min(assertions).value < 0:
-        return min(assertions)
-    else:
-        return max(assertions)
-
-
-_REVIEW_STATUS_LABELS = {
-    1: ("conflicting interpretations", "conflicting interpretations of pathogenicity"),
-    2: ("criteria provided",),
-    3: ("multiple submitters",),
-    4: ("no assertion criteria provided",),
-    5: ("no assertion provided",),
-    6: ("no conflicts",),
-    7: ("practice guideline",),
-    8: ("reviewed by expert panel",),
-    9: ("single submitter",),
-}
-
-
-class ClinVarReviewStatus(enum.Enum):
-    CONFLICTING_INTERPRETATIONS = 1
-    CRITERIA_PROVIDED = 2
-    MULTIPLE_SUBMITTERS = 3
-    NO_ASSERTION_CRITERIA_PROVIDED = 4
-    NO_ASSERTION_PROVIDED = 5
-    NO_CONFLICTS = 6
-    PRACTICE_GUIDELINE = 7
-    EXPERT_PANEL = 8
-    SINGLE_SUBMITTER = 9
-
-    @classmethod
-    def from_label(cls, label):
-        for val in cls:
-            if label in _REVIEW_STATUS_LABELS[val.value]:
-                return val
-        raise ValueError("Invalid label: %s" % label)
-
-    def label(self):
-        return _REVIEW_STATUS_LABELS[self.value][0]
+_ReviewedPathogenicity = typing.TypeVar("_ReviewedPathogenicity")
 
 
 @attr.s(frozen=True, auto_attribs=True)
-class ReviewedAssertion:
-    review_statuses: typing.Tuple[ClinVarReviewStatus, ...]
-    assertions: typing.Tuple[ClinVarAssertion, ...]
+class ReviewedPathogenicity:
+    review_statuses: typing.Tuple[ReviewStatus, ...]
+    pathogenicities: typing.Tuple[Pathogenicity, ...]
 
     def review_status_label(self):
         return ", ".join([s.label() for s in self.review_statuses])
 
-    def assertions_max_label(self):
-        return most_extreme(self.assertions).label()
-
-    def assertions_summary_label(self):
-        if len(self.assertions) == 1:
-            return "; ".join([a.label() for a in self.assertions])
+    def pathogenicity_label(self) -> str:
+        if ReviewStatus.CONFLICTING_INTERPRETATIONS in self.review_statuses:
+            result = "conflicting interpretations of pathogenicity - "
+            counts = {}
+            for pathogenicity in sorted(self.pathogenicities):
+                counts.setdefault(pathogenicity, 0)
+                counts[pathogenicity] += 1
+            result += "; ".join("%s (%d)" % (k.label(), v) for k, v in counts.items())
+            return result
         else:
-            tmp = {}
-            assertions = tuple(sorted(self.assertions, reverse=True))
-            for assertion in assertions:
-                tmp.setdefault(assertion, 0)
-                tmp[assertion] += 1
-            return "; ".join(["%s(%d)" % (a.label(), tmp[a]) for a in assertions])
+            pathogenicities = list(sorted(set(self.pathogenicities)))
+            return " / ".join(a.label() for a in pathogenicities)
 
-    def from_multiple(self):
-        return (
-            ClinVarReviewStatus.MULTIPLE_SUBMITTERS in self.review_statuses
-            or self.num_assertions() > 1
-        )
+    def pathogenicity_list(self, *, all_on_conflicts: bool) -> typing.List[str]:
+        if (
+            ReviewStatus.CONFLICTING_INTERPRETATIONS in self.review_statuses
+            and not all_on_conflicts
+        ):
+            return [Pathogenicity.UNCERTAIN.label()]
+        else:
+            return [pathogenicity.label() for pathogenicity in sorted(set(self.pathogenicities))]
 
-    def has_conflicting(self):
-        return ClinVarReviewStatus.CONFLICTING_INTERPRETATIONS in self.review_statuses or (
-            (self.num_assertions() > 1)
-            and (self.min_assertion().value < 0)
-            and (self.max_assertion().value > 0)
-        )
-
-    def min_assertion(self):
-        return min(self.assertions)
-
-    def max_assertion(self):
-        return min(self.assertions)
-
-    def num_assertions(self):
-        return len(self.assertions)
-
-    @classmethod
-    def from_clinvar_set(cls, elem: ClinVarSet):
-        return ReviewedAssertion(
-            review_statuses=tuple(
-                map(
-                    ClinVarReviewStatus.from_label,
-                    re.split(r", ?|/", elem.ref_cv_assertion.review_status),
-                )
-            ),
-            assertions=tuple(
-                map(
-                    ClinVarAssertion.from_label,
-                    re.split(r", ?|/", elem.ref_cv_assertion.pathogenicity),
-                )
-            ),
-        )
+    def gold_stars(self):
+        if ReviewStatus.PRACTICE_GUIDELINE in self.review_statuses:
+            return 4
+        elif ReviewStatus.EXPERT_PANEL in self.review_statuses:
+            return 3
+        elif (
+            ReviewStatus.CRITERIA_PROVIDED in self.review_statuses
+            and ReviewStatus.CRITERIA_PROVIDED in self.review_statuses
+            and ReviewStatus.MULTIPLE_SUBMITTERS in self.review_statuses
+            and ReviewStatus.NO_CONFLICTS in self.review_statuses
+        ):
+            return 2
+        elif (
+            ReviewStatus.CRITERIA_PROVIDED in self.review_statuses
+            and ReviewStatus.CONFLICTING_INTERPRETATIONS in self.review_statuses
+        ):
+            return 1
+        elif (
+            ReviewStatus.CRITERIA_PROVIDED in self.review_statuses
+            and ReviewStatus.SINGLE_SUBMITTER in self.review_statuses
+        ):
+            return 1
+        else:
+            return 0
 
     @classmethod
-    def combine(cls, elems):
-        review_statuses = (
-            ClinVarReviewStatus.MULTIPLE_SUBMITTERS,
-            ClinVarReviewStatus.NO_CONFLICTS,
-        )
-        assertions = []
+    def from_clinvar_set(cls, elem: ClinVarSet) -> typing.Tuple[_ReviewedPathogenicity, ...]:
+        result = []
+        for cv_assertion in elem.cv_assertions:
+            result.append(
+                ReviewedPathogenicity(
+                    review_statuses=tuple(
+                        map(
+                            lambda label: ReviewStatus.from_label(label, elem.id_no),
+                            re.split(r", ?|/", cv_assertion.review_status),
+                        )
+                    ),
+                    pathogenicities=tuple(
+                        map(
+                            lambda label: Pathogenicity.from_label(label, elem.id_no),
+                            re.split(r", ?|/", cv_assertion.pathogenicity),
+                        )
+                    ),
+                )
+            )
+        return tuple(result)
+
+    @classmethod
+    def combine(cls, elems: typing.Iterable[_ReviewedPathogenicity]) -> _ReviewedPathogenicity:
+        def sign(x):
+            if x < 0:
+                return -1
+            elif x > 0:
+                return 1
+            else:
+                return 0
+
+        all_pathogenicities = []
         for elem in elems:
-            assertions += list(elem.assertions)
-        return ReviewedAssertion(
-            review_statuses=review_statuses, assertions=tuple(sorted(set(assertions)))
+            all_pathogenicities += elem.pathogenicities
+        all_pathogenicities = list(sorted(all_pathogenicities))
+
+        all_statuses = []
+        for elem in elems:
+            all_statuses += elem.review_statuses
+        all_statuses = list(sorted(all_statuses))
+
+        multiple_submitters = len(elems) > 1
+
+        if all_statuses == [ReviewStatus.PRACTICE_GUIDELINE]:
+            review_statuses = [ReviewStatus.PRACTICE_GUIDELINE]
+        elif all_statuses == [ReviewStatus.EXPERT_PANEL]:
+            review_statuses = [ReviewStatus.EXPERT_PANEL]
+        else:
+            if multiple_submitters:
+                review_statuses = [ReviewStatus.MULTIPLE_SUBMITTERS]
+            else:
+                review_statuses = [ReviewStatus.SINGLE_SUBMITTER]
+            if ReviewStatus.CRITERIA_PROVIDED in all_statuses:
+                review_statuses.append(ReviewStatus.CRITERIA_PROVIDED)
+            else:
+                review_statuses.append(ReviewStatus.NO_ASSERTION_CRITERIA_PROVIDED)
+
+        signs = {sign(assertion.value) for assertion in set(all_pathogenicities)}
+        if multiple_submitters:
+            if len(signs) == 1:
+                review_statuses.append(ReviewStatus.NO_CONFLICTS)
+            else:
+                review_statuses.append(ReviewStatus.CONFLICTING_INTERPRETATIONS)
+
+        if 1 in signs and 0 in signs:
+            assertions = [assertion for assertion in all_pathogenicities if assertion.value >= 0]
+        elif 1 in signs and -1 in signs:
+            assertions = [assertion for assertion in all_pathogenicities if assertion.value != 0]
+        elif 0 in signs and -1 in signs:
+            assertions = [assertion for assertion in all_pathogenicities if assertion.value <= 0]
+        else:
+            assertions = []
+            for assertion in all_pathogenicities:
+                if assertion not in assertions:
+                    assertions.append(assertion)
+
+        return ReviewedPathogenicity(
+            review_statuses=tuple(review_statuses), pathogenicities=tuple(sorted(assertions))
         )
 
 
-def is_germline(elem: ClinVarSet):
-    try:
-        return elem.ref_cv_assertion.observed_in.origin != "somatic"
-    except AttributeError:
-        return True  # assume germline if origin not given
-
-
-def assertion_provided(elem: ClinVarSet):
-    return "no assertion provided" not in elem.ref_cv_assertion.pathogenicity
-
-
-def three_points(
-    reviewed_assertions: typing.List[ReviewedAssertion],
-) -> typing.Optional[ReviewedAssertion]:
-    """Extract three point ReviewedAssertion of possible."""
-    for review_status in (ClinVarReviewStatus.PRACTICE_GUIDELINE, ClinVarReviewStatus.EXPERT_PANEL):
-        for reviewed_assertion in reviewed_assertions:
-            if review_status in reviewed_assertion.review_statuses:
-                return ReviewedAssertion(
-                    review_statuses=(review_status,),
-                    assertions=(most_extreme(reviewed_assertion.assertions),),
-                )
-    return None
-
-
-def two_points(
-    reviewed_assertions: typing.List[ReviewedAssertion],
-) -> typing.Optional[ReviewedAssertion]:
-    """Extract two point ReviewedAssertion of possible."""
-    if not any(map(ReviewedAssertion.from_multiple, reviewed_assertions)):
-        return None  # is single => no two points
-    elif any(map(ReviewedAssertion.has_conflicting, reviewed_assertions)):
-        return None
+def rp_stratum(rp: ReviewedPathogenicity) -> int:
+    """Get stratum from ClinVarAssertion record."""
+    if ReviewStatus.PRACTICE_GUIDELINE in rp.review_statuses:
+        return 4
+    elif ReviewStatus.EXPERT_PANEL in rp.review_statuses:
+        return 3
+    elif ReviewStatus.CRITERIA_PROVIDED in rp.review_statuses:
+        return 2
     else:
-        return ReviewedAssertion.combine(reviewed_assertions)
+        return 1
 
 
-def one_point(
-    reviewed_assertions: typing.List[ReviewedAssertion],
-) -> typing.Optional[ReviewedAssertion]:
-    if (
-        len(reviewed_assertions) == 1
-        and ClinVarReviewStatus.MULTIPLE_SUBMITTERS not in reviewed_assertions[0].review_statuses
-    ):  # single submitter
-        return reviewed_assertions[0]
-    else:  # multiple submitters, must have conflicts
-        combined = ReviewedAssertion.combine(reviewed_assertions)
-        assert reviewed_assertions[0].has_conflicting
-        return combined
+def summarize(
+    chunk: typing.List[ClinVarSet], *, stratify_by_review_status: bool
+) -> ReviewedPathogenicity:
+    """Create summary ``ReviewedPathogenicity`` from ``chunk``.
+
+    If ``stratify_by_review_status`` then only the highest stratum will be used (e.g., assessments
+    with assertion criteria beat those without).  Otherwise, all will be considered.
+    """
+    # Obtain list of ReviewedAssertion objects
+    rps = list(itertools.chain(*map(ReviewedPathogenicity.from_clinvar_set, chunk)))
+    # Process, possibly stratified by review status
+    stratified = {}
+    for rp in rps:
+        stratum = rp_stratum(rp) if stratify_by_review_status else 0
+        stratified.setdefault(stratum, [])
+        stratified[stratum].append(rp)
+    highest_stratum = stratified[max(stratified.keys())]
+
+    return ReviewedPathogenicity.combine(highest_stratum)
 
 
-def zero_points(chunk) -> typing.Optional[ReviewedAssertion]:
-    reviewed_assertions = list(map(ReviewedAssertion.from_clinvar_set, chunk))
-    combined = ReviewedAssertion.combine(reviewed_assertions)
-    if any(map(assertion_provided, filter(is_germline, chunk))):
-        return None  # at least one germline with assertion => 1+ stars
-    elif any(filter(is_germline, chunk)):  # all germline: no assertion
-        return ReviewedAssertion(
-            review_statuses=(ClinVarReviewStatus.NO_ASSERTION_PROVIDED,),
-            assertions=combined.assertions,
-        )
-    else:  # all somatic
-        return combined
+def merge_and_write(clinvar_version, valss, chunk, out_tsv):
+    # Summarize chunks in clinvar and paranoid way.
+    clinvar_summary = summarize(chunk, stratify_by_review_status=True)
+    paranoid_summary = summarize(chunk, stratify_by_review_status=False)
 
-
-def merge_and_write(valss, chunk, out_tsv):
+    # Concatenate symbols & HGNC IDs.
     vals = valss[0]
-    # Try to assign zero point assertion (all somatic or all germline have
-    # no pathogenicity assigned.  If we have 1+ points then try three star
-    # assignments with only germline variants and those with an assigned assertion.
-    summary = zero_points(chunk)
-    if summary:
-        points = "0"
-    else:
-        points = "."  # counted as not in clinvar
-    # Attempt to obtain three point assertions.
-    if not summary:
-        # Remove variants of somatic origin.
-        chunk = list(filter(assertion_provided, filter(is_germline, chunk)))
-        # Get assertion/pathogenicity pairs.
-        reviewed_assertions = list(map(ReviewedAssertion.from_clinvar_set, chunk))
-        summary = three_points(reviewed_assertions)
-        if summary:
-            points = "3"
-    # If this fails, go on and try to find one point assertions.
-    if not summary:
-        summary = two_points(reviewed_assertions)
-        if summary:
-            points = "2"
-    if not summary:
-        summary = one_point(reviewed_assertions)
-        if summary:
-            points = "1"
-    # Merge symbols & HGNC IDs.
     symbols, hgnc_ids = [], []
     for one_vals in valss:
         if one_vals["symbols"] != "{}":
@@ -323,14 +232,19 @@ def merge_and_write(valss, chunk, out_tsv):
                 vals["bin"],
                 vals["reference"],
                 vals["alternative"],
+                clinvar_version,
                 vals["variation_type"],
                 as_pg_list(sorted(set(symbols))),
                 as_pg_list(sorted(set(hgnc_ids))),
                 vals["vcv"],
-                points,
-                summary.assertions_max_label(),
-                summary.review_status_label(),
-                summary.assertions_summary_label(),
+                clinvar_summary.review_status_label(),
+                clinvar_summary.pathogenicity_label(),
+                as_pg_list(clinvar_summary.pathogenicity_list(all_on_conflicts=False)),
+                str(clinvar_summary.gold_stars()),
+                paranoid_summary.review_status_label(),
+                paranoid_summary.pathogenicity_label(),
+                as_pg_list(paranoid_summary.pathogenicity_list(all_on_conflicts=True)),
+                str(paranoid_summary.gold_stars()),
                 json.dumps([cattr.unstructure(entry) for entry in chunk], cls=DateTimeEncoder)
                 .replace(r"\"", "'")
                 .replace('"', '"""'),
@@ -340,7 +254,7 @@ def merge_and_write(valss, chunk, out_tsv):
     )
 
 
-def merge_tsvs(in_tsv, out_tsv):
+def merge_tsvs(clinvar_version, in_tsv, out_tsv):
     header_in = in_tsv.readline().strip().split("\t")
     print("\t".join(HEADER_OUT), file=out_tsv)
 
@@ -352,8 +266,10 @@ def merge_tsvs(in_tsv, out_tsv):
         if not line:
             break
         vals = dict(zip(header_in, line.split("\t")))
+        # if vals["vcv"] not in ("VCV000210112", "VCV000243036"):
+        #     continue
         if prev_vals and vals["vcv"] != prev_vals["vcv"]:  # write chunk and start new one
-            merge_and_write(valss, chunk, out_tsv)
+            merge_and_write(clinvar_version, valss, chunk, out_tsv)
             chunk = []
             valss = []
         prev_vals = vals
@@ -361,4 +277,4 @@ def merge_tsvs(in_tsv, out_tsv):
         chunk.append(cattr.structure(obj, ClinVarSet))
         valss.append(vals)
     if prev_vals:  # write final chunk
-        merge_and_write(valss, chunk, out_tsv)
+        merge_and_write(clinvar_version, valss, chunk, out_tsv)

@@ -44,14 +44,14 @@ rule parse_clinvar:
     shell:
         r"""
         set -euo pipefail
-        
+
         clinvar_tsv parse_xml \
             --clinvar-xml {input.release_xml} \
             --output-b37 {output.b37} \
             --output-b38 {output.b38} \
             $(if [[ {config[debug]} == "True" ]]; then
                 echo "--max-rcvs 100"
-            fi) 
+            fi)
         """
 
 
@@ -87,11 +87,11 @@ rule sort_tabix_clinvar:
 
         cat \
             <(zcat {input} | head -n 1) \
-            <(zcat {input} | tail -n +2 | sort -k2,2n -k3,3n -k4,4 -k5,5) \
+            <(zcat {input} | tail -n +2 | sort -k2,2V -k3,3n -k4,4n -k11,11) \
         | bgzip -c \
         > {output.tsv}
         tabix -S 1 -s 2 -b 3 -e 4 -f {output.tsv}
-        
+
         cd $(dirname {output.tsv})
         md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
         md5sum $(basename {output.tbi}) >$(basename {output.tbi}).md5
@@ -104,18 +104,21 @@ rule merge_clinvar:
         tbi="output/clinvar.{genome_build}.tsv.gz.tbi",
         tsv_md5="output/clinvar.{genome_build}.tsv.gz.md5",
         tbi_md5="output/clinvar.{genome_build}.tsv.gz.tbi.md5",
+    params:
+        clinvar_version=config.get("clinvar_version", ".")
     shell:
         r"""
         set -euo pipefail
 
         zcat {input} \
         | clinvar_tsv merge_tsvs \
+            --clinvar-version {params.clinvar_version} \
             --input-tsv /dev/stdin \
             --output-tsv /dev/stdout \
         | bgzip -c \
         > {output.tsv}
         tabix -S 1 -s 2 -b 3 -e 4 -f {output.tsv}
-        
+
         cd $(dirname {output.tsv})
         md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
         md5sum $(basename {output.tbi}) >$(basename {output.tbi}).md5

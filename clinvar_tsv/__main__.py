@@ -29,7 +29,12 @@ def run_main(args):
     kwargs = {
         "snakefile": os.path.join(os.path.dirname(__file__), "Snakefile"),
         "workdir": args.work_dir,
-        "config": {"b37_path": args.b37_path, "b38_path": args.b38_path, "debug": args.debug},
+        "config": {
+            "b37_path": args.b37_path,
+            "b38_path": args.b38_path,
+            "debug": args.debug,
+            "clinvar_version": args.clinvar_version,
+        },
         "printshellcmds": True,
         "verbose": True,
         "force_incomplete": True,
@@ -67,7 +72,7 @@ def run_normalize_tsv(args):
 def run_merge_tsvs(args):
     with open(args.input_tsv, "rt") as input_tsv:
         with open(args.output_tsv, "wt") as output_tsv:
-            merge_tsvs.merge_tsvs(input_tsv, output_tsv)
+            merge_tsvs.merge_tsvs(args.clinvar_version, input_tsv, output_tsv)
 
 
 def run(args):
@@ -112,6 +117,9 @@ def main(argv=None):
     parser_main.add_argument(
         "--debug", default=False, action="store_true", help="Enables debugging helps"
     )
+    parser_main.add_argument(
+        "--clinvar-version", required=True, help="String to put as clinvar version"
+    )
     parser_main.set_defaults(func=run_main)
 
     # -----------------------------------------------------------------------
@@ -154,6 +162,9 @@ def main(argv=None):
     )
     parser_merge_tsvs.add_argument("--input-tsv", required=True, help="Path to input TSV file.")
     parser_merge_tsvs.add_argument("--output-tsv", required=True, help="Path to output TSV file.")
+    parser_merge_tsvs.add_argument(
+        "--clinvar-version", required=True, help="String to put as clinvar version"
+    )
     parser_merge_tsvs.set_defaults(func=run_merge_tsvs)
 
     args = parser.parse_args(argv)
