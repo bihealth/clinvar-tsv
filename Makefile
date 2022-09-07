@@ -12,3 +12,7 @@ test:
 .PHONY: isort
 isort:
 	isort --force-sort-within-sections -profile .
+
+.PHONY: flake8
+flake8:
+	flake8

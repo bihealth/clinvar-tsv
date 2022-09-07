@@ -29,6 +29,8 @@ jobs:
         run: pip install -e .
       - name: run test
         run: make test
+      - name: lint with flake8
+        run: flake8
       - name: check formatting
         run: black -l 100 --check .
       - name: check import order
