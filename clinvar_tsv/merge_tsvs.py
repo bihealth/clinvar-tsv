@@ -10,7 +10,7 @@ import attr
 import cattr
 from dateutil.parser import isoparse
 
-from .parse_clinvar_xml import ClinVarSet, DateTimeEncoder, VariationClinVarRecord, as_pg_list
+from .parse_clinvar_xml import ClinVarSet, DateTimeEncoder, as_pg_list
 
 HEADER_OUT = (
     "release",

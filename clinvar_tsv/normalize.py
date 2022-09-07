@@ -28,7 +28,6 @@ hyphens. For those situations, use this script (or just run vt normalize).
 Usage: normalize.py -R $b37ref < bad_file.txt > good_file.txt
 """
 
-import argparse
 import sys
 
 import pysam

@@ -5,11 +5,11 @@
 
 # Wonderful py.test library, style checker etc.
 pytest
-flake8
+flake8 ==4.0.1
 pytest-flake8
 coverage
 pytest-cov
-isort
+isort  ==5.10.1
 
 # Black source code formatter and style checker
-black ==22.6.0
+black ==22.8.0
