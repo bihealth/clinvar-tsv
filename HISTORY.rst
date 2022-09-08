@@ -3,6 +3,14 @@ Clinvar-TSV Changelog
 =====================
 
 ------
+v0.4.0
+------
+
+- Greatly refining record merging strategy (#6).
+  Also, providing both a ClinVar-like and a paranoid merging scheme.
+- Improving CI (#7)
+
+------
 v0.3.0
 ------
 
