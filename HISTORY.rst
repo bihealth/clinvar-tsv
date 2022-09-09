@@ -3,7 +3,7 @@ Clinvar-TSV Changelog
 =====================
 
 ------
-v0.4.1 (unreleased)
+v0.4.1
 ------
 
 - Also writing out ``set_type`` column (#10).
