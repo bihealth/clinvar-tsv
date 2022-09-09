@@ -533,6 +533,7 @@ def test_merge_tsvs_spta1(tmpdir):
             "reference",
             "alternative",
             "clinvar_version",
+            "set_type",
             "variation_type",
             "symbols",
             "hgnc_ids",
@@ -547,7 +548,7 @@ def test_merge_tsvs_spta1(tmpdir):
             "summary_paranoid_gold_stars",
             "details\n",
         ]
-        assert lines[1].split("\t")[:20] == [
+        assert lines[1].split("\t")[:21] == [
             "GRCh37",
             "9",
             "13150558",
@@ -556,6 +557,7 @@ def test_merge_tsvs_spta1(tmpdir):
             "A",
             "C",
             "VER",
+            "variant",
             "snv",
             '{"MPDZ"}',
             '{"HGNC:7208"}',

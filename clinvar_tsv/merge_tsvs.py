@@ -19,6 +19,7 @@ HEADER_OUT = (
     "reference",
     "alternative",
     "clinvar_version",
+    "set_type",
     "variation_type",
     "symbols",
     "hgnc_ids",
@@ -221,6 +222,18 @@ def merge_and_write(clinvar_version, valss, chunk, out_tsv):
             symbols += list(map(json.loads, one_vals["symbols"][1:-1].split(",")))
         if one_vals["hgnc_ids"] != "{}":
             hgnc_ids += list(map(json.loads, one_vals["hgnc_ids"][1:-1].split(",")))
+
+    # Get set type(s)
+    set_type = ",".join(
+        sorted(
+            {
+                genotype_set.set_type.lower()
+                for clinvar_set in chunk
+                for genotype_set in clinvar_set.ref_cv_assertion.genotype_sets
+            }
+        )
+    )
+
     # Write out record.
     print(
         "\t".join(
@@ -233,6 +246,7 @@ def merge_and_write(clinvar_version, valss, chunk, out_tsv):
                 vals["reference"],
                 vals["alternative"],
                 clinvar_version,
+                set_type,
                 vals["variation_type"],
                 as_pg_list(sorted(set(symbols))),
                 as_pg_list(sorted(set(hgnc_ids))),
