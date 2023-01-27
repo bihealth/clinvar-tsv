@@ -67,6 +67,7 @@ jobs:
       - name: Install dependencies
         run: |
             pip install -r requirements/test.txt
+            pip install .
             pip freeze
 
       - name: Run tests
