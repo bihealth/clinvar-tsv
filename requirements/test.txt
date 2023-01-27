@@ -3,17 +3,12 @@
 # Base Requirements
 -r base.txt
 
-# Wonderful py.test library, style checker etc.
+black ==22.3.0
+isort >=5.10.1, <6.0
+flake8 >=5.0.4, <6.0
 pytest
-flake8 ==4.0.1
-pytest-flake8
-coverage
 pytest-cov
-isort  ==5.10.1
-mypy ==0.971
-
-# Black source code formatter and style checker
-black ==22.8.0
+pyfakefs
 
 factory_boy ==3.2.1
 pytest-factoryboy ==2.5.0
