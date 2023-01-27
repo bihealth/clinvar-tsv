@@ -1,3 +1,6 @@
+[![CI](https://github.com/bihealth/clinvar-tsv/actions/workflows/ci.yml/badge.svg)](https://github.com/bihealth/clinvar-tsv/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/bihealth/clinvar-tsv/branch/main/graph/badge.svg?token=287XB5P11T)](https://codecov.io/gh/bihealth/clinvar-tsv)
+
 # Clinvar-TSV
 
 The code in this repository allows to first download,t hen convert ClinVar XML files into TSV files (one for b37 and b38).
