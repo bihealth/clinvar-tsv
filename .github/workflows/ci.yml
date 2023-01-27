@@ -1,54 +1,75 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
+    branches_ignore: []
 
 jobs:
-  build:
-    name: build
-    runs-on: ubuntu-20.04
+  cancel-previous:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - uses: khan/pull-request-workflow-cancel@1.0.0
+        with:
+          workflows: "main.yml"
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+            pip install -r requirements/test.txt
+            pip freeze
+
+      - name: Run linting tools
+        run: |
+          make lint
+
+      - name: Comment PR
+        if: github.event_name == 'pull_request' && failure()
+        uses: marocchino/sticky-pull-request-comment@v1.1.0
+        with:
+          message: 'Please format your code with [black](https://black.readthedocs.io): `make black`.'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  testing:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
           - '3.8'
           - '3.9'
           - '3.10'
+          - '3.11'
+    needs: linting
     steps:
-      - name: install Python
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # we need tags for versioneer to work
+
+      - name: Install Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: checkout repository
-        uses: actions/checkout@v2
-      - name: install project Python dependencies
-        run: |
-          pip install -r requirements/test.txt
-          pip freeze
-      - name: install package
-        run: pip install -e .
-      - name: run tests
-        run: |
-          make test
-          coverage xml
-          coverage report
-      - name: Coveralls
-        uses: AndreMiras/coveralls-python-action@develop
-        with:
-          parallel: true
-          flag-name: Unit Test
-      - name: lint with flake8
-        run: flake8
-      - name: check formatting
-        run: black -l 100 --check .
-      - name: check import order
-        run: isort --force-sort-within-sections --profile=black --line-length 100 --check .
 
-  coveralls_finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        parallel-finished: true
+      - name: Install dependencies
+        run: |
+            pip install -r requirements/test.txt
+            pip freeze
+
+      - name: Run tests
+        run: pytest
+
+      - uses: codecov/codecov-action@v3

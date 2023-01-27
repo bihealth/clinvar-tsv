@@ -25,17 +25,14 @@ def parse_requirements(path):
     return requirements
 
 
-with open("README.rst") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("HISTORY.rst") as history_file:
+with open("CHANGELOG.md") as history_file:
     history = history_file.read()
 
-requirements = parse_requirements("requirements.txt")
-
-test_requirements = [
-    # TODO: put package test requirements here
-]
+test_requirements = parse_requirements("requirements/test.txt")
+install_requirements = parse_requirements("requirements/base.txt")
 
 setup(
     name="clinvar-tsv",
@@ -43,6 +40,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description=("Python 3 library for accessing and managing BioMedical sheets"),
     long_description=readme + "\n\n" + history,
+    long_description_content_type="text/markdown",
     author="Manuel Holtgrewe",
     author_email="manuel.holtgrewe@bihealth.de",
     url="https://github.com/bihealth/clinvar-tsv",
@@ -50,7 +48,7 @@ setup(
     package_dir={"clinvar_tsv": "clinvar_tsv"},
     entry_points={"console_scripts": ["clinvar_tsv = clinvar_tsv.__main__:main"]},
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=install_requirements,
     license="MIT license",
     zip_safe=False,
     keywords="clinvar",
