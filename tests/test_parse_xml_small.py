@@ -9,12 +9,14 @@ def test_parse_74722873(tmpdir):
     """Test with record seen as problematic before"""
     with contextlib.ExitStack() as stack:
         inputf = stack.push(open("tests/data/clinvar-74722873.xml", "rt"))
-        out37 = stack.push((tmpdir / "out37.tsv").open("wt"))
-        out38 = stack.push((tmpdir / "out38.tsv").open("wt"))
-        parser = ClinvarParser(inputf, out37, out38)
+        out37_small = stack.push((tmpdir / "out37.small.tsv").open("wt"))
+        out37_sv = stack.push((tmpdir / "out37.sv.tsv").open("wt"))
+        out38_small = stack.push((tmpdir / "out38.small.tsv").open("wt"))
+        out38_sv = stack.push((tmpdir / "out38.sv.tsv").open("wt"))
+        parser = ClinvarParser(inputf, out37_small, out37_sv, out38_small, out38_sv)
         parser.run()
 
-    with (tmpdir / "out37.tsv").open("rt") as input37:
+    with (tmpdir / "out37.small.tsv").open("rt") as input37:
         lines = input37.readlines()
         assert len(lines) == 2
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]
@@ -33,7 +35,7 @@ def test_parse_74722873(tmpdir):
             "RCV000430591",
         ]
 
-    with (tmpdir / "out38.tsv").open("rt") as input38:
+    with (tmpdir / "out38.small.tsv").open("rt") as input38:
         lines = input38.readlines()
         assert len(lines) == 2
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]
@@ -57,12 +59,14 @@ def test_parse_74722873_in_context(tmpdir):
     """Test with record seen as problematic before, this time in contet"""
     with contextlib.ExitStack() as stack:
         inputf = stack.push(open("tests/data/clinvar-in-context-74722873.xml", "rt"))
-        out37 = stack.push((tmpdir / "out37.tsv").open("wt"))
-        out38 = stack.push((tmpdir / "out38.tsv").open("wt"))
-        parser = ClinvarParser(inputf, out37, out38)
+        out37_small = stack.push((tmpdir / "out37.small.tsv").open("wt"))
+        out37_sv = stack.push((tmpdir / "out37.sv.tsv").open("wt"))
+        out38_small = stack.push((tmpdir / "out38.small.tsv").open("wt"))
+        out38_sv = stack.push((tmpdir / "out38.sv.tsv").open("wt"))
+        parser = ClinvarParser(inputf, out37_small, out37_sv, out38_small, out38_sv)
         parser.run()
 
-    with (tmpdir / "out37.tsv").open("rt") as input37:
+    with (tmpdir / "out37.small.tsv").open("rt") as input37:
         lines = input37.readlines()
         assert len(lines) == 71
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]
@@ -95,7 +99,7 @@ def test_parse_74722873_in_context(tmpdir):
             "RCV000430192",
         ]
 
-    with (tmpdir / "out38.tsv").open("rt") as input38:
+    with (tmpdir / "out38.small.tsv").open("rt") as input38:
         lines = input38.readlines()
         assert len(lines) == 71
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]
@@ -133,12 +137,14 @@ def test_parse_spta1(tmpdir):
     """Test with record seen as problematic before"""
     with contextlib.ExitStack() as stack:
         inputf = stack.push(open("tests/data/clinvar-spta1.xml", "rt"))
-        out37 = stack.push((tmpdir / "out37.tsv").open("wt"))
-        out38 = stack.push((tmpdir / "out38.tsv").open("wt"))
-        parser = ClinvarParser(inputf, out37, out38)
+        out37_small = stack.push((tmpdir / "out37.small.tsv").open("wt"))
+        out37_sv = stack.push((tmpdir / "out37.sv.tsv").open("wt"))
+        out38_small = stack.push((tmpdir / "out38.small.tsv").open("wt"))
+        out38_sv = stack.push((tmpdir / "out38.sv.tsv").open("wt"))
+        parser = ClinvarParser(inputf, out37_small, out37_sv, out38_small, out38_sv)
         parser.run()
 
-    with (tmpdir / "out37.tsv").open("rt") as input37:
+    with (tmpdir / "out37.small.tsv").open("rt") as input37:
         lines = input37.readlines()
         assert len(lines) == 3
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]
@@ -171,7 +177,7 @@ def test_parse_spta1(tmpdir):
             "RCV000251633",
         ]
 
-    with (tmpdir / "out38.tsv").open("rt") as input38:
+    with (tmpdir / "out38.small.tsv").open("rt") as input38:
         lines = input38.readlines()
         assert len(lines) == 3
         assert lines[0].split("\t")[:2] == ["release", "chromosome"]

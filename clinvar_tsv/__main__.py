@@ -21,6 +21,7 @@ def run_inspect(args):
         "summary": True,
         "verbose": True,
     }
+    print(f"Running snakemake {kwargs}")
     snakemake.snakemake(**kwargs)
 
 
@@ -40,6 +41,7 @@ def run_main(args):
         "force_incomplete": True,
         "cores": 8,
     }
+    print(f"Running snakemake {kwargs}")
     return not snakemake.snakemake(**kwargs)
 
 
@@ -52,15 +54,21 @@ def open_maybe_gzip(path, mode):
 
 def run_parse_xml(args):
     """Parse XML file."""
-    with open(args.output_b37, "wt") as output_b37:
-        with open(args.output_b38, "wt") as output_b38:
-            parser = parse_clinvar_xml.ClinvarParser(
-                input_file=open_maybe_gzip(args.clinvar_xml, "rb"),
-                out_b37=output_b37,
-                out_b38=output_b38,
-                max_rcvs=args.max_rcvs,
-            )
-            parser.run()
+    with (
+        open(args.output_b37_small, "wt") as output_b37_small,
+        open(args.output_b37_sv, "wt") as output_b37_sv,
+        open(args.output_b38_small, "wt") as output_b38_small,
+        open(args.output_b38_sv, "wt") as output_b38_sv,
+    ):
+        parser = parse_clinvar_xml.ClinvarParser(
+            input_file=open_maybe_gzip(args.clinvar_xml, "rb"),
+            out_b37_small=output_b37_small,
+            out_b37_sv=output_b37_sv,
+            out_b38_small=output_b38_small,
+            out_b38_sv=output_b38_sv,
+            max_rcvs=args.max_rcvs,
+        )
+        parser.run()
 
 
 def run_normalize_tsv(args):
@@ -129,10 +137,16 @@ def main(argv=None):
     parser_parse_xml = subparsers.add_parser("parse_xml", help="Parse the Clinvar XML")
     parser_parse_xml.add_argument("--clinvar-xml", required=True, help="Path to Clinvar XML file.")
     parser_parse_xml.add_argument(
-        "--output-b37", required=True, help="Output path for GRCh37 file."
+        "--output-b37-small", required=True, help="Output path for small vars GRCh37 file."
     )
     parser_parse_xml.add_argument(
-        "--output-b38", required=True, help="Output path for GRCh38 file."
+        "--output-b37-sv", required=True, help="Output path for SV GRCh37 file."
+    )
+    parser_parse_xml.add_argument(
+        "--output-b38-small", required=True, help="Output path for small vars GRCh38 file."
+    )
+    parser_parse_xml.add_argument(
+        "--output-b38-sv", required=True, help="Output path for SV GRCh38 file."
     )
     parser_parse_xml.add_argument(
         "--max-rcvs", required=False, type=int, help="Maximal number of RCV records to process."

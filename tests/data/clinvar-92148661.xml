@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReleaseSet Dated="2021-10-02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="full" xsi:noNamespaceSchemaLocation="http://ftp.ncbi.nlm.nih.gov/pub/clinvar/xsd_public/clinvar_public_1.64.xsd">
+
+<ClinVarSet ID="92148661">
+  <RecordStatus>current</RecordStatus>
+  <Title>FUCA1, 2-EX DEL AND Fucosidosis</Title>
+  <ReferenceClinVarAssertion ID="58220" DateLastUpdated="2022-04-23" DateCreated="2013-04-04">
+    <ClinVarAccession Acc="RCV000000717" DateUpdated="2022-04-23" DateCreated="2013-04-04" Version="2" Type="RCV"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="1991-01-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData ID="96588318">
+        <Attribute Type="Description">In patients with fucosidosis (230000), Willems et al. (1991) demonstrated a deletion of 2 exons from the 3-prime end of the fucosidase gene. The deletion resulted in negligible fucosidase enzyme activity and severely reduced, immunologically cross-reactive protein.</Attribute>
+        <Citation Type="general">
+          <ID Source="PubMed">2012122</ID>
+        </Citation>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="682" Acc="VCV000000682" Version="1">
+      <Measure Type="Deletion" ID="15721">
+        <Name>
+          <ElementValue Type="Preferred">FUCA1, 2-EX DEL</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="nucleotide change">2-EX DEL</Attribute>
+        </AttributeSet>
+        <CytogeneticLocation>1p34</CytogeneticLocation>
+        <MeasureRelationship Type="asserted, but not computed">
+          <Name>
+            <ElementValue Type="Preferred">alpha-L-fucosidase 1</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">FUCA1</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh38" AssemblyAccessionVersion="GCF_000001405.38" AssemblyStatus="current" Chr="1" Accession="NC_000001.11" start="23845077" stop="23868290" display_start="23845077" display_stop="23868290" Strand="-"/>
+          <SequenceLocation Assembly="GRCh37" AssemblyAccessionVersion="GCF_000001405.25" AssemblyStatus="previous" Chr="1" Accession="NC_000001.10" start="24171566" stop="24194858" display_start="24171566" display_stop="24194858" variantLength="23293" Strand="-"/>
+          <XRef ID="2517" DB="Gene"/>
+          <XRef Type="MIM" ID="612280" DB="OMIM"/>
+          <XRef ID="HGNC:4006" DB="HGNC"/>
+        </MeasureRelationship>
+        <XRef Type="Allelic variant" ID="612280.0002" DB="OMIM"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="Preferred">FUCA1, 2-EX DEL</ElementValue>
+      </Name>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="172">
+      <Trait ID="1356" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Fucosidosis</ElementValue>
+          <XRef ID="3120" DB="GeneTests"/>
+          <XRef ID="Fucosidosis/2958" DB="Genetic Alliance"/>
+          <XRef ID="MONDO:0009254" DB="MONDO"/>
+          <XRef ID="64716005" DB="SNOMED CT"/>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">Alpha-l-fucosidase deficiency</ElementValue>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">Lysosomal storage disease caused by defective alpha-L-fucosidase with accumulation of fucose in the tissues</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="GARD id" integerValue="6473"/>
+          <XRef ID="6473" DB="Office of Rare Diseases"/>
+        </AttributeSet>
+        <XRef ID="MONDO:0009254" DB="MONDO"/>
+        <XRef ID="C0016788" DB="MedGen"/>
+        <XRef ID="349" DB="Orphanet"/>
+        <XRef Type="MIM" ID="230000" DB="OMIM"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="20867">
+    <ClinVarSubmissionID localKey="612280.0002_FUCOSIDOSIS" submitter="OMIM" submitterDate="2011-04-21" title="FUCA1, 2-EX DEL_FUCOSIDOSIS"/>
+    <ClinVarAccession Acc="SCV000020867" DateCreated="2013-04-04" DateUpdated="2013-04-04" Version="1" Type="SCV" OrgID="3" OrganizationCategory="resource" OrgType="primary"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="1991-01-01">
+      <ReviewStatus>no assertion criteria provided</ReviewStatus>
+      <Description>Pathogenic</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ExternalID DB="OMIM" ID="612280.0002" Type="Allelic variant"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+      </Sample>
+      <Method>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">In patients with fucosidosis (230000), Willems et al. (1991) demonstrated a deletion of 2 exons from the 3-prime end of the fucosidase gene. The deletion resulted in negligible fucosidase enzyme activity and severely reduced, immunologically cross-reactive protein.</Attribute>
+        <Citation>
+          <ID Source="PubMed">2012122</ID>
+        </Citation>
+        <XRef DB="OMIM" ID="230000" Type="MIM"/>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <Name>
+          <ElementValue Type="Preferred">FUCA1, 2-EX DEL</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="NonHGVS">2-EX DEL</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">FUCA1</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+        <XRef DB="OMIM" ID="612280.0002" Type="Allelic variant"/>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">FUCOSIDOSIS</ElementValue>
+        </Name>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+</ReleaseSet>
