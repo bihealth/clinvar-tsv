@@ -72,7 +72,7 @@ class ClinvarParser:
         #: Largest number of rcvs to process out (for testing only)
         self.max_rcvs = max_rcvs
 
-    def run(self):
+    def run(self):  # noqa: C901
         logger.info("Parsing elements...")
         out_files = {
             "GRCh37": {"small": self.out_b37_small, "sv": self.out_b37_sv},
