@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://www.github.com/bihealth/clinvar-tsv/compare/v0.4.1...v0.5.0) (2023-05-03)
+
+
+### Features
+
+* export structural variants ([#13](https://www.github.com/bihealth/clinvar-tsv/issues/13)) ([db44d87](https://www.github.com/bihealth/clinvar-tsv/commit/db44d8739f6f619266f806611950f339b0842352))
+
 ## 0.4.1
 
 - Also writing out ``set_type`` column (#10).
