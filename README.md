@@ -1,5 +1,7 @@
 [![CI](https://github.com/bihealth/clinvar-tsv/actions/workflows/ci.yml/badge.svg)](https://github.com/bihealth/clinvar-tsv/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/bihealth/clinvar-tsv/branch/main/graph/badge.svg?token=287XB5P11T)](https://codecov.io/gh/bihealth/clinvar-tsv)
+[![Package Version](https://img.shields.io/pypi/v/clinvar-tsv.svg)](https://pypi.org/project/clinvar-tsv)
+[![Python Versions](https://img.shields.io/pypi/pyversions/clinvar-tsv.svg)](https://pypi.org/project/clinvar-tsv)
 
 # Clinvar-TSV
 
