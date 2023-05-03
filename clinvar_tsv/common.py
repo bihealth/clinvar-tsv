@@ -206,13 +206,15 @@ class Measure:
             elem.text for elem in element.findall('.//Symbol/ElementValue[@Type="Preferred"]')
         ]
         hgnc_ids = [elem.attrib.get("ID") for elem in element.findall('.//XRef[@DB="HGNC"]')]
+        n = element.findall("./SequenceLocation")
+        m = element.findall(".//SequenceLocation")
         return Measure(
             measure_type=element.attrib.get("Type"),
             symbols=tuple(sorted(set(symbols))),
             hgnc_ids=tuple(sorted(set(hgnc_ids))),
             sequence_locations={
                 elem.attrib.get("Assembly"): SequenceLocation.from_element(elem)
-                for elem in element.findall("./SequenceLocation")
+                for elem in (n or m)
             },
             comments=tuple(
                 elem.text
@@ -539,12 +541,10 @@ _PATHOGENICITY_LABELS = {
     0: (
         "uncertain significance",
         # below: other
-        "affects",
         "association",
         "association not found",
         "cancer",
         "confers sensitivity",
-        "drug response",
         "drug response",
         "drug-response",
         "histocompatibility",
@@ -557,6 +557,7 @@ _PATHOGENICITY_LABELS = {
         "untested",
         "variant of unknown significance",
         "associated with leiomyomas",
+        "conflicting data from submitters",
     ),
     1: (
         "likely pathogenic",
@@ -613,7 +614,11 @@ class Pathogenicity(enum.Enum):
 
 
 _REVIEW_STATUS_LABELS = {
-    1: ("conflicting interpretations", "conflicting interpretations of pathogenicity"),
+    1: (
+        "conflicting interpretations",
+        "conflicting interpretations of pathogenicity",
+        "conflicting data from submitters",
+    ),
     2: ("criteria provided",),
     3: ("multiple submitters",),
     4: ("no assertion criteria provided",),

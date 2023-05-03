@@ -153,6 +153,7 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
     ref_equals_alt = 0
     wrong_ref = 0
     invalid_nucleotide = 0
+    unknown_contig = 0
     for line in infile.readlines():
         data = dict(zip(columns, line.strip("\n").split("\t")))
         # fill the data with blanks for any missing data
@@ -176,6 +177,10 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
             )
             if data["chromosome"].startswith("chr"):
                 data["chromosome"] = data["chromosome"][3:]
+        except KeyError as e:
+            sys.stderr.write("\n" + str(e) + "\n")
+            unknown_contig += 1
+            continue
         except RefEqualsAltError as e:
             sys.stderr.write("\n" + str(e) + "\n")
             ref_equals_alt += 1
@@ -200,6 +205,6 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
     outfile.write("\n\n")
     if verbose:
         sys.stderr.write(
-            "Final counts of variants discarded:\nREF == ALT: %s\nWrong REF: %s\nInvalid nucleotide: %s\n"
-            % (ref_equals_alt, wrong_ref, invalid_nucleotide)
+            "Final counts of variants discarded:\nREF == ALT: %s\nWrong REF: %s\nInvalid nucleotide: %s\nUnknown contig: %s\n"
+            % (ref_equals_alt, wrong_ref, invalid_nucleotide, unknown_contig)
         )
