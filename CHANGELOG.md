@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.1](https://www.github.com/bihealth/clinvar-tsv/compare/v0.5.0...v0.5.1) (2023-05-03)
+
+
+### Documentation
+
+* adding badges to README ([#15](https://www.github.com/bihealth/clinvar-tsv/issues/15)) ([6e7ac01](https://www.github.com/bihealth/clinvar-tsv/commit/6e7ac013be4c0c7c34df41b69594581a7b8116f9))
+
 ## [0.5.0](https://www.github.com/bihealth/clinvar-tsv/compare/v0.4.1...v0.5.0) (2023-05-03)
 
 
