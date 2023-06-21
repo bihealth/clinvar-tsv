@@ -39,7 +39,7 @@ def run_main(args):
         "printshellcmds": True,
         "verbose": True,
         "force_incomplete": True,
-        "cores": 8,
+        "cores": args.cores,
     }
     print(f"Running snakemake {kwargs}")
     return not snakemake.snakemake(**kwargs)
@@ -121,7 +121,7 @@ def main(argv=None):
         "--b38-path", required=True, help="Path to GRCh38 FAI-indexed FASTA file."
     )
     parser_main.add_argument("--work-dir", default=os.getcwd(), help="Path to working directory")
-    parser_main.add_argument("--cores", default=1, type=int, help="Number of cores to use")
+    parser_main.add_argument("--cores", default=8, type=int, help="Number of cores to use")
     parser_main.add_argument(
         "--debug", default=False, action="store_true", help="Enables debugging helps"
     )
