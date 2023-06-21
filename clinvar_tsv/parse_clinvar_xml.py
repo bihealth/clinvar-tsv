@@ -125,7 +125,7 @@ class ClinvarParser:
                                                 TypeError,
                                             )
                                         except TypeError:
-                                            logger.info(
+                                            logger.debug(
                                                 "Cannot determine location from %s", measure
                                             )
                                             continue
