@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.6.2](https://www.github.com/bihealth/clinvar-tsv/compare/v0.6.1...v0.6.2) (2023-06-21)
+
+
+### Bug Fixes
+
+* failure to determine location only goes to debug level ([#22](https://www.github.com/bihealth/clinvar-tsv/issues/22)) ([76bc510](https://www.github.com/bihealth/clinvar-tsv/commit/76bc5105e6f0b26146dcaca43465c1dd59d1aee2))
+* higher verbosity in Snakemake rules ([#26](https://www.github.com/bihealth/clinvar-tsv/issues/26)) ([a3fc327](https://www.github.com/bihealth/clinvar-tsv/commit/a3fc3271a8984b39d52c8852f6fe77b05b1193c0))
+* interpret --cores argument ([#24](https://www.github.com/bihealth/clinvar-tsv/issues/24)) ([3b09803](https://www.github.com/bihealth/clinvar-tsv/commit/3b098038c47fb33bffabf94510cc9b6fee3f7d43))
+* map "low penetrance" to "uncertain significance" ([#25](https://www.github.com/bihealth/clinvar-tsv/issues/25)) ([b2708d7](https://www.github.com/bihealth/clinvar-tsv/commit/b2708d75ad37d4270c253bf6928056c7deba8d84))
+* no verbose output by default ([#27](https://www.github.com/bihealth/clinvar-tsv/issues/27)) ([0ad10cb](https://www.github.com/bihealth/clinvar-tsv/commit/0ad10cb8122480d2f46fbb6d2fba1e063be6da3c))
+* reduce tqdm progress display unless on TTY ([#21](https://www.github.com/bihealth/clinvar-tsv/issues/21)) ([770b0c8](https://www.github.com/bihealth/clinvar-tsv/commit/770b0c833a2707a88e5ee9c0f2a0eb1435defdc6))
+
 ### [0.6.1](https://www.github.com/bihealth/clinvar-tsv/compare/v0.6.0...v0.6.1) (2023-06-21)
 
 
