@@ -31,10 +31,7 @@ def test_summarize_stratified_single(cvs_factory, rcva_factory, cva_factory):
         stratify_by_review_status=True,
     )
     expected = ReviewedPathogenicity(
-        review_statuses=(
-            ReviewStatus.SINGLE_SUBMITTER,
-            ReviewStatus.CRITERIA_PROVIDED,
-        ),
+        review_statuses=(ReviewStatus.SINGLE_SUBMITTER, ReviewStatus.CRITERIA_PROVIDED),
         pathogenicities=(Pathogenicity.LIKELY_BENIGN,),
     )
     assert result == expected
@@ -64,10 +61,7 @@ def test_summarize_unstratified_single(cvs_factory, rcva_factory, cva_factory):
         stratify_by_review_status=False,
     )
     expected = ReviewedPathogenicity(
-        review_statuses=(
-            ReviewStatus.SINGLE_SUBMITTER,
-            ReviewStatus.CRITERIA_PROVIDED,
-        ),
+        review_statuses=(ReviewStatus.SINGLE_SUBMITTER, ReviewStatus.CRITERIA_PROVIDED),
         pathogenicities=(Pathogenicity.LIKELY_BENIGN,),
     )
     assert result == expected
@@ -216,10 +210,7 @@ def test_summarize_stratified_lb_vus(cvs_factory, rcva_factory, cva_factory):
         stratify_by_review_status=True,
     )
     expected = ReviewedPathogenicity(
-        review_statuses=(
-            ReviewStatus.SINGLE_SUBMITTER,
-            ReviewStatus.CRITERIA_PROVIDED,
-        ),
+        review_statuses=(ReviewStatus.SINGLE_SUBMITTER, ReviewStatus.CRITERIA_PROVIDED),
         pathogenicities=(Pathogenicity.LIKELY_BENIGN,),
     )
     assert result == expected
@@ -320,10 +311,7 @@ def test_summarize_unstratified_lb_b(cvs_factory, rcva_factory, cva_factory):
             ReviewStatus.CRITERIA_PROVIDED,
             ReviewStatus.NO_CONFLICTS,
         ),
-        pathogenicities=(
-            Pathogenicity.BENIGN,
-            Pathogenicity.LIKELY_BENIGN,
-        ),
+        pathogenicities=(Pathogenicity.BENIGN, Pathogenicity.LIKELY_BENIGN),
     )
     assert result == expected
 
@@ -370,10 +358,7 @@ def test_summarize_unstratified_lp_p(cvs_factory, rcva_factory, cva_factory):
             ReviewStatus.CRITERIA_PROVIDED,
             ReviewStatus.NO_CONFLICTS,
         ),
-        pathogenicities=(
-            Pathogenicity.LIKELY_PATHOGENIC,
-            Pathogenicity.PATHOGENIC,
-        ),
+        pathogenicities=(Pathogenicity.LIKELY_PATHOGENIC, Pathogenicity.PATHOGENIC),
     )
     assert result == expected
 
@@ -440,8 +425,7 @@ def test_summarize_expert_panel(cvs_factory, rcva_factory, cva_factory):
                 ),
                 cv_assertions=(
                     cva_factory(
-                        review_status="reviewed by expert panel",
-                        pathogenicity="likely pathogenic",
+                        review_status="reviewed by expert panel", pathogenicity="likely pathogenic"
                     ),
                 ),
             ),
@@ -453,8 +437,7 @@ def test_summarize_expert_panel(cvs_factory, rcva_factory, cva_factory):
                 ),
                 cv_assertions=(
                     cva_factory(
-                        review_status="criteria provided, single submitter",
-                        pathogenicity="benign",
+                        review_status="criteria provided, single submitter", pathogenicity="benign"
                     ),
                 ),
             ),
@@ -483,22 +466,16 @@ def test_summarize_practice_guideline(cvs_factory, rcva_factory, cva_factory):
                 ),
                 cv_assertions=(
                     cva_factory(
-                        review_status="practice guideline",
-                        pathogenicity="likely pathogenic",
+                        review_status="practice guideline", pathogenicity="likely pathogenic"
                     ),
                 ),
             ),
             cvs_factory(
                 ref_cv_assertion=rcva_factory(
-                    gold_stars=3,
-                    review_status="reviewed by expert panel",
-                    pathogenicity="benign",
+                    gold_stars=3, review_status="reviewed by expert panel", pathogenicity="benign"
                 ),
                 cv_assertions=(
-                    cva_factory(
-                        review_status="reviewed by expert panel",
-                        pathogenicity="benign",
-                    ),
+                    cva_factory(review_status="reviewed by expert panel", pathogenicity="benign"),
                 ),
             ),
         ],
