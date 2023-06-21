@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.6.1](https://www.github.com/bihealth/clinvar-tsv/compare/v0.6.0...v0.6.1) (2023-06-21)
+
+
+### Bug Fixes
+
+* missing/problematic clinvar version ([#19](https://www.github.com/bihealth/clinvar-tsv/issues/19)) ([b11a8a4](https://www.github.com/bihealth/clinvar-tsv/commit/b11a8a435d9269031589106cf8929169893db5ef))
+
 ## [0.6.0](https://www.github.com/bihealth/clinvar-tsv/compare/v0.5.0...v0.6.0) (2023-06-21)
 
 
