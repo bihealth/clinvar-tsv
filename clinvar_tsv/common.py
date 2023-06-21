@@ -558,6 +558,7 @@ _PATHOGENICITY_LABELS = {
         "variant of unknown significance",
         "associated with leiomyomas",
         "conflicting data from submitters",
+        "low penetrance",
     ),
     1: (
         "likely pathogenic",
