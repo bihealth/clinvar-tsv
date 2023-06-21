@@ -10,6 +10,7 @@ Reference on clinvar XML tag:
 
 import json
 import xml.etree.ElementTree as ET
+import sys
 
 import binning
 import cattr
@@ -81,7 +82,9 @@ class ClinvarParser:
         for d in out_files.values():
             for out_file in d.values():
                 print(TSV_HEADER, file=out_file)
-        with tqdm.tqdm(unit="rcvs") as progress:
+        # Reduce the progress bar refresh rate if we're not in a TTY
+        mininterval = 0.1 if sys.stdout.isatty() else 60
+        with tqdm.tqdm(unit="rcvs", mininterval=mininterval) as progress:
             for event, elem in ET.iterparse(self.input):
                 if elem.tag == "ClinVarSet" and event == "end":
                     self.rcvs += 1
