@@ -1,4 +1,8 @@
+import os
 import os.path
+
+#: ClinVar version to download.
+CLINVAR_VERSION = os.environ.get("CLINVAR_VERSION")
 
 #: Path to b37/b38 FASTA file
 REF = {
@@ -18,27 +22,17 @@ rule default:
 
 
 rule download_xml:
-    output: "downloads/ClinVarFullRelease_00-latest.xml.gz"
+    output: "downloads/ClinVarFullRelease_{clinvar_version}.xml.gz"
     shell:
         r"""
-        wget -c -N -O {output} ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_00-latest.xml.gz \
-        2> {output}.log
-        """
-
-
-rule download_txt:
-    output: "downloads/variant_summary.txt.gz"
-    shell:
-        r"""
-        wget -c -N -O {output} ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz \
+        wget -c -N -O {output} https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/weekly_release/ClinVarFullRelease_{wildcards.clinvar_version}.xml.gz \
         2> {output}.log
         """
 
 
 rule parse_clinvar:
     input:
-        release_xml="downloads/ClinVarFullRelease_00-latest.xml.gz",
-        summary="downloads/variant_summary.txt.gz",
+        release_xml=f"downloads/ClinVarFullRelease_{CLINVAR_VERSION}.xml.gz"
     output:
         b37_small="parsed/clinvar_table_raw.b37.tsv",
         b37_sv="parsed/clinvar_sv.b37.tsv",
