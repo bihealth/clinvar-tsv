@@ -79,8 +79,8 @@ def run_normalize_tsv(args):
 
 def run_merge_tsvs(args):
     with open(args.input_tsv, "rt") as input_tsv:
-        with open(args.output_tsv, "wt") as output_tsv:
-            merge_tsvs.merge_tsvs(args.clinvar_version, input_tsv, output_tsv)
+        with open(args.output_jsonl, "wt") as output_jsonl:
+            merge_tsvs.merge_tsvs(args.clinvar_version, input_tsv, output_jsonl)
 
 
 def run(args):
@@ -175,7 +175,7 @@ def main(argv=None):
         "merge_tsvs", help="Merge TSV file (result: one per VCV)"
     )
     parser_merge_tsvs.add_argument("--input-tsv", required=True, help="Path to input TSV file.")
-    parser_merge_tsvs.add_argument("--output-tsv", required=True, help="Path to output TSV file.")
+    parser_merge_tsvs.add_argument("--output-jsonl", required=True, help="Path to output JSONL file.")
     parser_merge_tsvs.add_argument(
         "--clinvar-version", required=True, help="String to put as clinvar version"
     )

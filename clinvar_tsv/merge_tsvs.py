@@ -35,6 +35,30 @@ HEADER_OUT = (
     "details",
 )
 
+@attr.s(frozen=True, auto_attribs=True)
+class OutputRecord:
+    chromosome: str
+    start: int
+    end: int
+    reference: str
+    alternative: str
+    clinvar_version: str
+    set_type: str
+    variation_type: str
+    symbols: typing.Tuple[str, ...]
+    hgnc_ids: typing.Tuple[str, ...]
+    vcv: str
+    summary_clinvar_review_status_label: str
+    summary_clinvar_pathogenicity_label: str
+    summary_clinvar_pathogenicity: str
+    summary_clinvar_gold_stars: int
+    summary_paranoid_review_status_label: str
+    summary_paranoid_pathogenicity_label: str
+    summary_paranoid_pathogenicity: str
+    summary_paranoid_gold_stars: int
+    details: typing.Tuple[ClinVarSet, ...]
+
+
 
 _ReviewedPathogenicity = typing.TypeVar("_ReviewedPathogenicity")
 
@@ -209,7 +233,7 @@ def summarize(
     return ReviewedPathogenicity.combine(highest_stratum)
 
 
-def merge_and_write(clinvar_version, valss, chunk, out_tsv):
+def merge_and_write(clinvar_version, valss, chunk, out_jsonl):
     # Summarize chunks in clinvar and paranoid way.
     clinvar_summary = summarize(chunk, stratify_by_review_status=True)
     paranoid_summary = summarize(chunk, stratify_by_review_status=False)
@@ -234,44 +258,34 @@ def merge_and_write(clinvar_version, valss, chunk, out_tsv):
         )
     )
 
-    # Write out record.
-    print(
-        "\t".join(
-            [
-                vals["release"],
-                vals["chromosome"],
-                vals["start"],
-                vals["end"],
-                vals["bin"],
-                vals["reference"],
-                vals["alternative"],
-                clinvar_version,
-                set_type,
-                vals["variation_type"],
-                as_pg_list(sorted(set(symbols))),
-                as_pg_list(sorted(set(hgnc_ids))),
-                vals["vcv"],
-                clinvar_summary.review_status_label(),
-                clinvar_summary.pathogenicity_label(),
-                as_pg_list(clinvar_summary.pathogenicity_list(all_on_conflicts=False)),
-                str(clinvar_summary.gold_stars()),
-                paranoid_summary.review_status_label(),
-                paranoid_summary.pathogenicity_label(),
-                as_pg_list(paranoid_summary.pathogenicity_list(all_on_conflicts=True)),
-                str(paranoid_summary.gold_stars()),
-                json.dumps([cattr.unstructure(entry) for entry in chunk], cls=DateTimeEncoder)
-                .replace(r"\"", "'")
-                .replace('"', '"""'),
-            ]
-        ),
-        file=out_tsv,
+    # Construct output record.
+    record = OutputRecord(
+        chromosome=vals["chromosome"],
+        start=int(vals["start"]),
+        end=int(vals["end"]),
+        reference=vals["reference"],
+        alternative=vals["alternative"],
+        clinvar_version=clinvar_version,
+        set_type=set_type,
+        variation_type=vals["variation_type"],
+        symbols=symbols,
+        hgnc_ids=hgnc_ids,
+        vcv=vals["vcv"],
+        summary_clinvar_review_status_label=clinvar_summary.review_status_label(),
+        summary_clinvar_pathogenicity_label=clinvar_summary.pathogenicity_label(),
+        summary_clinvar_pathogenicity=clinvar_summary.pathogenicity_list(all_on_conflicts=False),
+        summary_clinvar_gold_stars=clinvar_summary.gold_stars(),
+        summary_paranoid_review_status_label=paranoid_summary.review_status_label(),
+        summary_paranoid_pathogenicity_label=paranoid_summary.pathogenicity_label(),
+        summary_paranoid_pathogenicity=paranoid_summary.pathogenicity_list(all_on_conflicts=False),
+        summary_paranoid_gold_stars=paranoid_summary.gold_stars(),
+        details=chunk
     )
+    print(json.dumps(cattr.unstructure(record), cls=DateTimeEncoder), file=out_jsonl)
 
 
-def merge_tsvs(clinvar_version, in_tsv, out_tsv):
+def merge_tsvs(clinvar_version, in_tsv, out_jsonl):
     header_in = in_tsv.readline().strip().split("\t")
-    print("\t".join(HEADER_OUT), file=out_tsv)
-
     prev_vals = None
     chunk = []
     valss = []
@@ -280,10 +294,8 @@ def merge_tsvs(clinvar_version, in_tsv, out_tsv):
         if not line:
             break
         vals = dict(zip(header_in, line.split("\t")))
-        # if vals["vcv"] not in ("VCV000210112", "VCV000243036"):
-        #     continue
         if prev_vals and vals["vcv"] != prev_vals["vcv"]:  # write chunk and start new one
-            merge_and_write(clinvar_version, valss, chunk, out_tsv)
+            merge_and_write(clinvar_version, valss, chunk, out_jsonl)
             chunk = []
             valss = []
         prev_vals = vals
@@ -291,4 +303,4 @@ def merge_tsvs(clinvar_version, in_tsv, out_tsv):
         chunk.append(cattr.structure(obj, ClinVarSet))
         valss.append(vals)
     if prev_vals:  # write final chunk
-        merge_and_write(clinvar_version, valss, chunk, out_tsv)
+        merge_and_write(clinvar_version, valss, chunk, out_jsonl)

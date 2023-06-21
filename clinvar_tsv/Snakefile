@@ -10,10 +10,10 @@ REF = {
 rule default:
     input:
         expand(
-            "output/clinvar_{size}.{build}.tsv{ext}",
+            "output/clinvar_{size}.{build}.jsonl{ext}",
             size=("small", "sv"),
             build=("b37", "b38"),
-            ext=(".gz", ".gz.tbi", ".gz.md5", ".gz.tbi.md5"),
+            ext=(".gz", ".gz.md5"),
         )
 
 
@@ -130,10 +130,8 @@ rule sort_svs:
 rule merge_clinvar:
     input: "unmerged/clinvar_{size}.{genome_build}.tsv.gz",
     output:
-        tsv="output/clinvar_{size}.{genome_build}.tsv.gz",
-        tbi="output/clinvar_{size}.{genome_build}.tsv.gz.tbi",
-        tsv_md5="output/clinvar_{size}.{genome_build}.tsv.gz.md5",
-        tbi_md5="output/clinvar_{size}.{genome_build}.tsv.gz.tbi.md5",
+        jsonl="output/clinvar_{size}.{genome_build}.jsonl.gz",
+        jsonl_md5="output/clinvar_{size}.{genome_build}.jsonl.gz.md5",
     params:
         clinvar_version=config.get("clinvar_version", ".")
     shell:
@@ -144,12 +142,10 @@ rule merge_clinvar:
         | clinvar_tsv merge_tsvs \
             --clinvar-version {params.clinvar_version} \
             --input-tsv /dev/stdin \
-            --output-tsv /dev/stdout \
-        | bgzip -c \
-        > {output.tsv}
-        tabix -S 1 -s 2 -b 3 -e 4 -f {output.tsv}
+            --output-jsonl /dev/stdout \
+        | gzip -c \
+        > {output.jsonl}
 
-        cd $(dirname {output.tsv})
-        md5sum $(basename {output.tsv}) >$(basename {output.tsv}).md5
-        md5sum $(basename {output.tbi}) >$(basename {output.tbi}).md5
+        cd $(dirname {output.jsonl})
+        md5sum $(basename {output.jsonl}) >$(basename {output.jsonl}).md5
         """
