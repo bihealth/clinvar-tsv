@@ -9,8 +9,8 @@ Reference on clinvar XML tag:
 """
 
 import json
-import xml.etree.ElementTree as ET
 import sys
+import xml.etree.ElementTree as ET
 
 import binning
 import cattr
