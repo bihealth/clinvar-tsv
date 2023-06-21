@@ -182,6 +182,7 @@ def main(argv=None):
     parser_merge_tsvs.set_defaults(func=run_merge_tsvs)
 
     args = parser.parse_args(argv)
+    os.environ["CLINVAR_VERSION"] = args.clinvar_version
     return run(args)
 
 
