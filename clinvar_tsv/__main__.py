@@ -37,7 +37,7 @@ def run_main(args):
             "clinvar_version": args.clinvar_version,
         },
         "printshellcmds": True,
-        "verbose": True,
+        "verbose": args.verbose,
         "force_incomplete": True,
         "cores": args.cores,
     }
@@ -114,6 +114,9 @@ def main(argv=None):
     # -----------------------------------------------------------------------
 
     parser_main = subparsers.add_parser("main", help="Run the full process pipeline")
+    parser_main.add_argument(
+        "--verbose", default=False, action="store_true", help="Enable verbose output"
+    )
     parser_main.add_argument(
         "--b37-path", required=True, help="Path to GRCh37 FAI-indexed FASTA file."
     )
