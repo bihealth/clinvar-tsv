@@ -41,6 +41,7 @@ rule parse_clinvar:
     shell:
         r"""
         set -euo pipefail
+        set -x
 
         clinvar_tsv parse_xml \
             --clinvar-xml {input.release_xml} \
@@ -62,6 +63,7 @@ rule normalize_clinvar:
     shell:
         r"""
         set -euo pipefail
+        set -x
 
         clinvar_tsv normalize_tsv \
             --input-tsv {input.tsv} \
@@ -83,6 +85,7 @@ rule sort_tabix_clinvar:
     shell:
         r"""
         set -euo pipefail
+        set -x
 
         cat \
             <(zcat {input} | head -n 1) \
@@ -108,6 +111,7 @@ rule sort_svs:
     shell:
         r"""
         set -euo pipefail
+        set -x
 
         cat \
             <(cat {input} | head -n 1) \
@@ -133,6 +137,7 @@ rule merge_clinvar:
     shell:
         r"""
         set -euo pipefail
+        set -x
 
         zcat {input} \
         | clinvar_tsv merge_tsvs \
