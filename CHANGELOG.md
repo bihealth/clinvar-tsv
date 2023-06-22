@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.6.3](https://www.github.com/bihealth/clinvar-tsv/compare/v0.6.2...v0.6.3) (2023-06-22)
+
+
+### Bug Fixes
+
+* improved debugging for normalize ([#29](https://www.github.com/bihealth/clinvar-tsv/issues/29)) ([4124a34](https://www.github.com/bihealth/clinvar-tsv/commit/4124a3434294ee6736e5487b1586f9a9f0921b02))
+* memory usage in normalize command ([#31](https://www.github.com/bihealth/clinvar-tsv/issues/31)) ([33f8ac7](https://www.github.com/bihealth/clinvar-tsv/commit/33f8ac79891f1a36f788bc619e2ad728ebdabbae))
+
 ### [0.6.2](https://www.github.com/bihealth/clinvar-tsv/compare/v0.6.1...v0.6.2) (2023-06-21)
 
 
