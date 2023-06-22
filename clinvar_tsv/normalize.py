@@ -160,7 +160,7 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
     # Reduce the progress bar refresh rate if we're not in a TTY
     mininterval = 0.1 if sys.stdout.isatty() else 60
     with tqdm.tqdm(unit="lines", mininterval=mininterval) as progress:
-        for line in infile.readlines():
+        for line in infile:
             data = dict(zip(columns, line.strip("\n").split("\t")))
             # fill the data with blanks for any missing data
             for column in columns:
