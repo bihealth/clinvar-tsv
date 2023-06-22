@@ -28,9 +28,12 @@ hyphens. For those situations, use this script (or just run vt normalize).
 Usage: normalize.py -R $b37ref < bad_file.txt > good_file.txt
 """
 
+import os
+import subprocess
 import sys
 
 import pysam
+import tqdm
 
 
 class RefEqualsAltError(Exception):
@@ -154,54 +157,60 @@ def normalize_tab_delimited_file(infile, outfile, reference_fasta, verbose=True)
     wrong_ref = 0
     invalid_nucleotide = 0
     unknown_contig = 0
-    for line in infile.readlines():
-        data = dict(zip(columns, line.strip("\n").split("\t")))
-        # fill the data with blanks for any missing data
-        for column in columns:
-            if column not in data.keys():
-                data[column] = ""
-        pos = int(data.get("position", data["start"]))
-        # Normalize "chr" prefix towards reference and fix M/MT
-        if ref_chr_prefix == has_chr(data["chromosome"]):
-            chrom = data["chromosome"]
-        elif ref_chr_prefix:
-            chrom = "chr%s" % data["chromosome"]
-        else:
-            chrom = data["chrom"][3:]
-        if ref_chr_prefix and chrom.endswith("MT"):
-            chrom = "chrM"
-        # Perform normalization
-        try:
-            _, pos, data["reference"], data["alternative"] = normalize(
-                pysam_fasta, chrom, pos, data["reference"], data["alternative"]
-            )
-            if data["chromosome"].startswith("chr"):
-                data["chromosome"] = data["chromosome"][3:]
-        except KeyError as e:
-            sys.stderr.write("\n" + str(e) + "\n")
-            unknown_contig += 1
-            continue
-        except RefEqualsAltError as e:
-            sys.stderr.write("\n" + str(e) + "\n")
-            ref_equals_alt += 1
-            continue
-        except WrongRefError as e:
-            sys.stderr.write("\n" + str(e) + "\n")
-            wrong_ref += 1
-            continue
-        except InvalidNucleotideSequenceError as e:
-            sys.stderr.write("\n" + str(e) + "\n")
-            invalid_nucleotide += 1
-            continue
-        if "position" in columns:
-            data["position"] = str(pos)
-        else:
-            data["start"] = str(pos)
-            data["end"] = str(pos + len(data["reference"]) - 1)
-        outfile.write("\t".join([data[column] for column in columns]) + "\n")
-        counter += 1
-        if verbose and counter % 1000 == 0:
-            sys.stderr.write("\r%s records processed\n" % (counter))
+    # Reduce the progress bar refresh rate if we're not in a TTY
+    mininterval = 0.1 if sys.stdout.isatty() else 60
+    with tqdm.tqdm(unit="lines", mininterval=mininterval) as progress:
+        for line in infile.readlines():
+            data = dict(zip(columns, line.strip("\n").split("\t")))
+            # fill the data with blanks for any missing data
+            for column in columns:
+                if column not in data.keys():
+                    data[column] = ""
+            pos = int(data.get("position", data["start"]))
+            # Normalize "chr" prefix towards reference and fix M/MT
+            if ref_chr_prefix == has_chr(data["chromosome"]):
+                chrom = data["chromosome"]
+            elif ref_chr_prefix:
+                chrom = "chr%s" % data["chromosome"]
+            else:
+                chrom = data["chrom"][3:]
+            if ref_chr_prefix and chrom.endswith("MT"):
+                chrom = "chrM"
+            # Perform normalization
+            try:
+                _, pos, data["reference"], data["alternative"] = normalize(
+                    pysam_fasta, chrom, pos, data["reference"], data["alternative"]
+                )
+                if data["chromosome"].startswith("chr"):
+                    data["chromosome"] = data["chromosome"][3:]
+            except KeyError as e:
+                sys.stderr.write("\n" + str(e) + "\n")
+                unknown_contig += 1
+                continue
+            except RefEqualsAltError as e:
+                sys.stderr.write("\n" + str(e) + "\n")
+                ref_equals_alt += 1
+                continue
+            except WrongRefError as e:
+                sys.stderr.write("\n" + str(e) + "\n")
+                wrong_ref += 1
+                continue
+            except InvalidNucleotideSequenceError as e:
+                sys.stderr.write("\n" + str(e) + "\n")
+                invalid_nucleotide += 1
+                continue
+            if "position" in columns:
+                data["position"] = str(pos)
+            else:
+                data["start"] = str(pos)
+                data["end"] = str(pos + len(data["reference"]) - 1)
+            outfile.write("\t".join([data[column] for column in columns]) + "\n")
+            counter += 1
+            if verbose and counter % 1000 == 0:
+                sys.stderr.write("\r%s records processed\n" % (counter))
+            if os.environ.get("DEBUG_MEM", "0") == "1" and counter % 10000 == 0:
+                subprocess.run(["free"])
+            progress.update()
     outfile.write("\n\n")
     if verbose:
         sys.stderr.write(
